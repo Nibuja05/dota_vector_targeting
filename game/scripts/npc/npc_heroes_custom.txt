@@ -1,0 +1,39 @@
+"DOTAHeroes"
+{
+	//=================================================================================================================
+	// HERO: Pharyx
+	//=================================================================================================================
+	"npc_dota_hero_pharyx"
+	{
+		"override_hero"				"npc_dota_hero_arc_warden"					// Hero to override
+		"Ability1"					"pharyx_focus_crystal"					// Ability 1
+		"Ability2"					"pharyx_stasis_crystal"
+		"Ability3"					"pharyx_repositioning_crystal"
+		"Ability4"					"pharyx_reposition"
+		"Ability5"					"pharyx_better_construction"
+		"Ability6"					"pharyx_divine_construction"
+		"VisionNighttimeRange"		"1800"										// Range of vision at night time.
+	
+		"Ability10"		"special_bonus_undefined"
+		"Ability11"		"special_bonus_undefined"
+		"Ability12"		"special_bonus_undefined"
+		"Ability13"		"special_bonus_undefined"
+		"Ability14"		"special_bonus_undefined"
+		"Ability15"		"special_bonus_undefined"
+		"Ability16"		"special_bonus_undefined"
+		"Ability17"		"special_bonus_undefined"
+	
+		"AbilityLayout" "6"
+	}
+	//=================================================================================================================
+	// HERO: Pharyx
+	//=================================================================================================================
+	"npc_dota_hero_test"
+	{
+		"override_hero"				"npc_dota_hero_pangolier"					// Hero to override
+		"Ability2"					"test_vector_targeting"					// Ability 2
+		"Ability3"					"test_vector_targeting_lua"					// Ability 3
+		"VisionNighttimeRange"		"1800"										// Range of vision at night time.
+	
+	}
+}

@@ -1,0 +1,681 @@
+"DOTAAbilities"
+{
+	
+	
+	"pharyx_better_construction"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"heroes/hero_pharyx/pharyx_better_construction"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_AURA | DOTA_ABILITY_BEHAVIOR_NOT_LEARNABLE | DOTA_ABILITY_BEHAVIOR_UNIT_TARGET"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"4"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_FRIENDLY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		"AbilityTextureName"				"better"
+	
+		"precache"
+		{
+			"particle"  "particles/status_effect_gold_armor.vpcf"
+		}
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"radius" 						"1000"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"bonus_health"  				"30 40 50"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_FLOAT"
+				"health_regen"  				"0.5 1 1.5 2"
+			}
+		}
+	}
+	
+	
+	"pharyx_divine_construction"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"3"
+		"AbilityType"						"DOTA_ABILITY_TYPE_ULTIMATE"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_FRIENDLY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		"AbilityTextureName"				"divine"
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"tier1_reduction" 				"0 -5 -5"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"tier2_reduction" 				"0 -5 -10"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"tier3_reduction" 				"0 0 -10"
+			}
+		}
+	
+		"OnUpgrade"
+		{
+			"LevelUpAbility"
+			{
+				"Target" 		"CASTER"
+				"AbilityName"	"pharyx_better_construction"
+			}
+		}
+	}
+	
+	
+	"pharyx_focus_crystal"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"heroes/hero_pharyx/pharyx_focus_crystal"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"focus"
+		"AbilityCastRange"   				"%range"
+		"AbilityCastPoint"   				"2.0 1.7 1.4 1.1 0.8 0.5"
+		"AbilityCooldown"    				"35 32 29 26 23 20"
+		"AbilityDamage" 					"%damage_per_second"
+		"AbilityManaCost"    				"120 130 140 150 160 170"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"base_health_block"  			"10"
+			}
+		}
+	}
+	
+	
+	"pharyx_reposition"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"heroes/hero_pharyx/pharyx_reposition"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"reposition"
+		"AbilityCastRange"   				"%range"
+		"AbilityCastPoint"   				"0.3"
+		"AbilityCooldown"    				"30"
+		"AbilityManaCost"    				"100"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_FRIENDLY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"1000 1300 1600 1900 2200 2500"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_FLOAT"
+				"channel_duration" 				"2.0 1.8 1.6 1.4 1.2 1.0"
+			}
+		}
+	}
+	
+	
+	"pharyx_repositioning_crystal"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"heroes/hero_pharyx/pharyx_repositioning_crystal"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"repositioning"
+		"AbilityCastRange"   				"%range"
+		"AbilityCastPoint"   				"2.0 1.7 1.4 1.1 0.8 0.5"
+		"AbilityCooldown"    				"35 32 29 26 23 20"
+		"AbilityManaCost"    				"120 130 140 150 160 170"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"base_health_block"  			"10"
+			}
+		}
+	}
+	
+	
+	"pharyx_stasis_crystal"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"heroes/hero_pharyx/pharyx_stasis_crystal"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"stasis"
+		"AbilityCastRange"   				"%range"
+		"AbilityCastPoint"   				"2.0 1.7 1.4 1.1 0.8 0.5"
+		"AbilityCooldown"    				"35 32 29 26 23 20"
+		"AbilityManaCost"    				"120 130 140 150 160 170"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"600 650 700 750 800 850"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"base_health_block"  			"10"
+			}
+		}
+	}
+	
+	"test_vector_targeting"
+	{
+		// General
+		//-------------------------------------------------------------------------------------------------------------
+		"BaseClass"						"ability_datadriven"
+		"AbilityBehavior"				"DOTA_ABILITY_BEHAVIOR_POINT | DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING"
+		"AbilityUnitTargetTeam"			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityTextureName"			"invoker_forge_spirit"
+		"AbilityUnitDamageType"         "DAMAGE_TYPE_PHYSICAL"
+	    "SpellImmunityType"             "SPELL_IMMUNITY_ENEMIES_YES"
+	
+	    "AbilityCastPoint"              "0.1 0.1 0.1 0.1"
+	    "AbilityCooldown"               "12"
+	    "AbilityManaCost"               "100"   
+		
+		// Special
+		//-------------------------------------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"				"FIELD_INTEGER"
+				"move_speed"			"200 250 300 350"
+			}
+		}
+	
+		"OnSpellStart"
+		{
+			"Damage"
+			{
+				"Target"		"CASTER"
+				"Type"			"DAMAGE_TYPE_MAGICAL"
+				"Damage"		"100"
+			}
+		}
+		
+	}
+	
+	
+	"test_vector_targeting_lua"
+	{
+		"BaseClass"     					"ability_lua"
+		"ScriptFile"    					"vector_targeting_lua"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"AbilityTextureName" 				"stasis"
+		"AbilityCastRange"   				"%range"
+		"AbilityCastPoint"   				"0"
+		"AbilityCooldown"    				"35 32 29 26 23 20"
+		"AbilityManaCost"    				"120 130 140 150 160 170"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+	
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"600 650 700 750 800 850"
+			}
+		}
+	}
+	
+	
+	"crystal_basic_stasis"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"stasis"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"600 650 700 750 800 850"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"max_enemies"  					"1 1 1 2 2 2"
+			}
+			"03"
+			{
+				"var_type"						"FIELD_FLOAT"
+				"root_duration"					"0.5 0.8 1.1 1.4 1.7 2.0"
+			}
+			"04"
+			{
+				"var_type"						"FIELD_FLOAT"
+				"root_cooldown"					"3.0"
+			}
+			"05"
+			{
+				"var_type"						"FIELD_INTEGER"
+				"root_radius"					"450"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_basic_root_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_basic_stasis.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+	
+	
+	"crystal_fighting_drone_simple"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"stasis"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"search_range" 					"500"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"damage_per_attack"  			"10 20 30 40 50 60"
+			}
+			"03"
+			{
+				"var_type"						"FIELD_INTEGER"
+				"drone_speed"					"250 270 290 310 330 350"
+			}
+			"04"
+			{
+				"var_type"						"FIELD_INTEGER"
+				"drone_health"					"1"
+			}
+			"05"
+			{
+				"var_type"						"FIELD_FLOAT"
+				"spawn_interval"				"5.0 4.7 4.4 4.1 2.8 2.5"
+			}
+			"06"
+			{
+				"var_type"						"FIELD_INTEGER"
+				"max_count"						"5 6 7 8 9 10"
+			}
+			"07"
+			{
+				"var_type"						"FIELD_FLOAT"
+				"attack_interval"				"2.0 1.9 1.8 1.7 1.6 1.5"
+			}
+		}
+		"OnProjectileHitUnit"
+		{
+			"DeleteOnHit"	"1"
+			"RunScript"
+			{
+				"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_fighting_drone_simple.lua"
+				"Function"		"DroneHit"
+				"Target"		"TARGET"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_basic_root_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_fighting_drone_simple.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+	
+	
+	"crystal_focus_fire"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"focus"
+		"AbilityDamage" 					"%damage_per_second"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"600 650 700 750 800 850"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"damage_per_second"  			"120 180 240 300 360 420"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"attack_radius"  				"450"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_focus_fire_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_focus_fire.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+	
+	
+	"crystal_focus_fire_lock"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"focus"
+		"AbilityDamage" 					"%damage_per_second"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"range" 						"600 650 700 750 800 850"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"damage_per_second"  			"120 180 240 300 360 420"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"attack_radius"  				"450"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_focus_fire_lock_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_focus_fire_lock.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+	
+	
+	"crystal_reposition_target"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"repositioning"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_FLOAT"
+				"channel_duration" 				"2.0 1.8 1.6 1.4 1.2 1.0"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_reposition_target_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_reposition_target.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+	
+	"crystal_vacuum_mine"
+	{
+		"BaseClass"     					"ability_datadriven"
+		"AbilityBehavior"					"DOTA_ABILITY_BEHAVIOR_PASSIVE"
+		"AbilityUnitDamageType"   			"DAMAGE_TYPE_MAGICAL"
+		"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
+		"FightRecapLevel"    				"1"
+		"MaxLevel"							"6"
+		"AbilityTextureName" 				"repositioning"
+		"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
+		"AbilityUnitTargetType"   			"DOTA_UNIT_TARGET_HERO | DOTA_UNIT_TARGET_BASIC"
+		"AbilityUnitTargetFlags"   			"DOTA_UNIT_TARGET_FLAG_NONE"
+		//Precache
+		//-------------------------------------------------------------------------------
+		"precache"
+		{
+			"particle"     					"particles/units/heroes/hero_kunkka/kunkka_spell_torrent_splash.vpcf"
+		}
+		//AbilitySpecial
+		//-------------------------------------------------------------------------------
+		"AbilitySpecial"
+		{
+			"01"
+			{
+				"var_type"    					"FIELD_FLOAT"
+				"pull_duration" 				"0.5 0.8 1.1 1.4 1.7 2.0"
+			}
+			"02"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"spawn_radius" 					"600"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_INTEGER"
+				"mine_radius" 					"100"
+			}
+			"03"
+			{
+				"var_type"    					"FIELD_FLOAT"
+				"spawn_interval" 				"8.0 7.7 7.4 7.1 6.8 6.5"
+			}
+		}
+		"Modifiers"
+		{
+			"modifier_crystal_vaccum_mine_passive"
+			{
+				"Passive"			"1"
+				"IsHidden"			"1"
+				"IsDebuff"			"0"
+		
+				"OnCreated"
+				{
+					"RunScript"
+					{
+						"ScriptFile"	"heroes/hero_pharyx/crystal_abilities/crystal_vacuum_mine.lua"
+						"Function"		"Initiate"
+					}
+				}
+			}
+		}
+	}
+}

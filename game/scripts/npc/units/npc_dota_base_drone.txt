@@ -1,0 +1,73 @@
+//=================================================================================	
+// Creature: Crystal Base
+//=================================================================================
+"npc_dota_base_drone"	
+{
+	// General
+	//----------------------------------------------------------------
+	"Model"						"models/items/meepo/diggers_divining_rod/diggers_divining_rod_gem_topaz2.vmdl"	// Model.
+	"BaseClass"					"npc_dota_creature"
+	"SoundSet"					"n_creep_Ranged"
+	"GameSoundsFile"			"soundevents/game_sounds_creeps.vsndevts"
+	"Level"						"1"
+	"ModelScale" 				".9"
+
+	// Abilities
+	//----------------------------------------------------------------
+	"Ability1"					""			// Ability 1
+	"Ability2"					""			// Ability 2
+	"Ability3"					""			// Ability 3
+	"Ability4"					""			// Ability 4
+
+	// Armor
+	//----------------------------------------------------------------
+	"ArmorPhysical"				"1"			// Physical protection.
+
+	// Attack
+	//----------------------------------------------------------------
+	"AttackCapabilities"		"DOTA_UNIT_CAP_NO_ATTACK"
+	"AttackDamageMin"			"30"		// Damage range min.
+	"AttackDamageMax"			"36"		// Damage range max.
+	"AttackRate"				"1.6"		// Speed of attack.
+	"AttackAnimationPoint"		"0.4"		// Normalized time in animation cycle to attack.
+	"AttackAcquisitionRange"	"800"		// Range within a target can be acquired.
+	"AttackRange"				"500"		// Range within a target can be attacked.
+	"ProjectileModel"			"particles/neutral_fx/gnoll_base_attack.vpcf" // Particle system model for projectile.
+	"ProjectileSpeed"			"1500"		// Speed of projectile.		     
+
+	// Bounds
+	//----------------------------------------------------------------
+	"RingRadius"				"40"
+	"HealthBarOffset"			"170"
+
+	// Bounty
+	//----------------------------------------------------------------
+	"BountyXP"					"24"		// Experience earn.
+	"BountyGoldMin"				"21"		// Gold earned min.
+	"BountyGoldMax"				"29"		// Gold earned max.
+
+	// Movement
+	//----------------------------------------------------------------
+	"MovementCapabilities"		"DOTA_UNIT_CAP_MOVE_GROUND"
+	"MovementSpeed"				"270"		// Speed.			
+
+	// Status
+	//----------------------------------------------------------------
+	"StatusHealth"				"10"		// Base health.
+	"StatusHealthRegen"			"0.0"		// Health regeneration rate.
+	"StatusMana"				"0"			// Base mana.
+	"StatusManaRegen"			"0.0"		// Mana regeneration rate.		 
+	
+	// Vision
+	//----------------------------------------------------------------
+	"VisionDaytimeRange"		"450"		// Range of vision during day light.
+	"VisionNighttimeRange"		"450"		// Range of vision at night time.
+
+	// Team
+	//----------------------------------------------------------------
+	"TeamName"					"DOTA_TEAM_NEUTRALS"						// Team name.
+	"CombatClassAttack"			"DOTA_COMBAT_CLASS_ATTACK_PIERCE"
+	"CombatClassDefend"			"DOTA_COMBAT_CLASS_DEFEND_BASIC"
+	"UnitRelationshipClass"		"DOTA_NPC_UNIT_RELATIONSHIP_TYPE_DEFAULT"
+
+}

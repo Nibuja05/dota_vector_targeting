@@ -1,0 +1,11 @@
+//=================================================================================================================
+// HERO: Pharyx
+//=================================================================================================================
+"npc_dota_hero_test"
+{
+	"override_hero"				"npc_dota_hero_pangolier"					// Hero to override
+	"Ability2"					"test_vector_targeting"					// Ability 2
+	"Ability3"					"test_vector_targeting_lua"					// Ability 3
+	"VisionNighttimeRange"		"1800"										// Range of vision at night time.
+
+}
