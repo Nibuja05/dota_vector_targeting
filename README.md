@@ -14,3 +14,6 @@ A Helper Library to use vector targeting for dota lua abilities.
 
 - Set up nettables:
 	- Copy 'custom\_net\_tables.txt' in your script folder
+
+- Use for your lua abilities:
+	- look up the example ability

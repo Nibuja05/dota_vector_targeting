@@ -6,7 +6,6 @@
 	"ScriptFile"    					"vector_targeting_lua"
 	"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
 	"FightRecapLevel"    				"1"
-	"AbilityTextureName" 				"stasis"
 	"AbilityCastRange"   				"%range"
 	"AbilityCastPoint"   				"0"
 	"AbilityCooldown"    				"35 32 29 26 23 20"
