@@ -38,7 +38,7 @@ function VectorTarget:AddVectorTargetingAbilities(hero)
 			if ability:IsVectorTargeting() then
 				local abilityTable = {
 					name = ability:GetAbilityName(),
-					range = 800,
+					range = ability:GetVectorTargetRange(),
 				}
 				local vectorAbilities = CustomNetTables:GetTableValue("ability_api", "vector_target")
 				if not vectorAbilities then

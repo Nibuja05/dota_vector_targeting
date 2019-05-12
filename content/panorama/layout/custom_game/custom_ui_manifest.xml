@@ -2,4 +2,7 @@
 	<scripts>
         <include src="file://{resources}/scripts/custom_game/vector_targeting.js" />
     </scripts>
+    <Panel>
+		<!-- empty -->
+	</Panel>
 </root>

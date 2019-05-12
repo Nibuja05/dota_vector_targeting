@@ -1,6 +1,6 @@
 var CONSUME_EVENT = true;
 var CONTINUE_PROCESSING_EVENT = false;
-var PATTACH_ABSORIGIN_FOLLOW = 1
+var PATTACH_ABSORIGIN_FOLLOW = 1;
 
 var active = 1;
 var select = {};
@@ -22,6 +22,8 @@ var vector_target_particle = undefined;
 var vector_start_position = undefined;
 var vector_range = undefined;
 
+$.Msg("[VT] Script loaded.");
+
 function OnVectorTargetingStart()
 {
 	var iPlayerID = Players.GetLocalPlayer();
@@ -31,12 +33,13 @@ function OnVectorTargetingStart()
 	var cursor = GameUI.GetCursorPosition();
 	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
-	$.Msg("[VT] Show Particle:");
-	$.Msg(worldPosition);
+	// Show Particle
 	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", PATTACH_ABSORIGIN_FOLLOW, mainSelected);
 	Particles.SetParticleControl(vector_target_particle, 1, worldPosition);
 	Particles.SetParticleControl(vector_target_particle, 3, [125, 125, 0]);
 	Particles.SetParticleControl(vector_target_particle, 4, [0, 255, 0]);
+
+	$.Msg("Particle?");
 
 	vector_start_position = worldPosition;
 	var unitPosition = Entities.GetAbsOrigin(mainSelected);
@@ -51,9 +54,8 @@ function OnVectorTargetingStart()
 
 function OnVectorTargetingEnd()
 {
-	$.Msg("[VT] Stop")
-
-	Particles.DestroyParticleEffect(vector_target_particle, true)
+	// Stop Effect, send data
+	//Particles.DestroyParticleEffect(vector_target_particle, true);
 	vector_target_particle = undefined;
 
 	SendPosition();

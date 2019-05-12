@@ -6,6 +6,7 @@
 	"ScriptFile"    					"vector_targeting_lua"
 	"SpellImmunityType"  				"SPELL_IMMUNITY_ENEMIES_NO"
 	"FightRecapLevel"    				"1"
+	"AbilityTextureName"				"mirana_arrow"
 	"AbilityCastRange"   				"%range"
 	"AbilityCastPoint"   				"0"
 	"AbilityCooldown"    				"35 32 29 26 23 20"
