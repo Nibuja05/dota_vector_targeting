@@ -18,7 +18,15 @@ function VectorTarget:StartVectorCast( event )
 
 	local ability = caster:FindAbilityByName(abilityName)
 	local direction = -(position - position2):Normalized()
-	ability:OnVectorCastStart(position, direction)
+
+	if position == position2 then
+		direction = -(caster:GetAbsOrigin() - position):Normalized()
+	end
+
+	direction = Vector(direction.x, direction.y, 0)
+	if ability then
+		ability:OnVectorCastStart(position, direction)
+	end
 
 end
 
@@ -32,13 +40,13 @@ end
 
 function VectorTarget:AddVectorTargetingAbilities(hero)
 	print("[VT] Search for vector targeting abilities...")
-	for i=1, 10 do
+	for i=0, 10 do
 		local ability = hero:GetAbilityByIndex(i)
 		if ability then
 			if ability:IsVectorTargeting() then
 				local abilityTable = {
 					name = ability:GetAbilityName(),
-					range = ability:GetVectorTargetRange(),
+					range = 800,
 				}
 				local vectorAbilities = CustomNetTables:GetTableValue("ability_api", "vector_target")
 				if not vectorAbilities then
@@ -46,6 +54,7 @@ function VectorTarget:AddVectorTargetingAbilities(hero)
 				end
 				table.insert(vectorAbilities, abilityTable)
 				CustomNetTables:SetTableValue( "ability_api", "vector_target", vectorAbilities)
+				print("[VT] Added "..ability:GetName().." to vector targeting abilities")
 			end
 		end
 	end

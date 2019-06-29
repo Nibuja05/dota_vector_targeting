@@ -1,6 +1,5 @@
 var CONSUME_EVENT = true;
 var CONTINUE_PROCESSING_EVENT = false;
-var PATTACH_ABSORIGIN_FOLLOW = 1;
 
 var active = 1;
 var select = {};
@@ -20,9 +19,7 @@ var abilities = x.FindChildTraverse('abilities');
 var active_ability = undefined;
 var vector_target_particle = undefined;
 var vector_start_position = undefined;
-var vector_range = undefined;
-
-$.Msg("[VT] Script loaded.");
+var vector_range = 800;
 
 function OnVectorTargetingStart()
 {
@@ -33,13 +30,15 @@ function OnVectorTargetingStart()
 	var cursor = GameUI.GetCursorPosition();
 	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
-	// Show Particle
-	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", PATTACH_ABSORIGIN_FOLLOW, mainSelected);
-	Particles.SetParticleControl(vector_target_particle, 1, worldPosition);
+	$.Msg("[VT] Show Particle:");
+	var casterLoc = Entities.GetAbsOrigin(mainSelected);
+	var testPos = [casterLoc[0] + 800, casterLoc[1], casterLoc[2]];
+	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
+	Particles.SetParticleControl(vector_target_particle, 1, Vector_raiseZ(worldPosition, 100));
+	Particles.SetParticleControl(vector_target_particle, 2, Vector_raiseZ(testPos, 100));
 	Particles.SetParticleControl(vector_target_particle, 3, [125, 125, 0]);
 	Particles.SetParticleControl(vector_target_particle, 4, [0, 255, 0]);
 
-	$.Msg("Particle?");
 
 	vector_start_position = worldPosition;
 	var unitPosition = Entities.GetAbsOrigin(mainSelected);
@@ -54,8 +53,9 @@ function OnVectorTargetingStart()
 
 function OnVectorTargetingEnd()
 {
-	// Stop Effect, send data
-	//Particles.DestroyParticleEffect(vector_target_particle, true);
+	$.Msg("[VT] Stop")
+
+	Particles.DestroyParticleEffect(vector_target_particle, true)
 	vector_target_particle = undefined;
 
 	SendPosition();
@@ -89,7 +89,7 @@ function ShowVectorTargetingParticle()
 		if (val[0] !== 0 && val[1] !== 0 && val[2] !== 0)
 		{
 			var direction = Vector_normalize(Vector_sub(vector_start_position, worldPosition));
-			direction = Vector_negate(direction);
+			direction = Vector_flatten(Vector_negate(direction));
 			var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
 
 			Particles.SetParticleControl(vector_target_particle, 2, newPosition);
@@ -110,19 +110,21 @@ GameUI.SetMouseCallback(function(eventName, arg)
 	var abilityName = Abilities.GetAbilityName(active_ability);
 	var vectorAbilities = CustomNetTables.GetTableValue("ability_api", "vector_target");
 
-	for (var key in vectorAbilities) {
-	 	var value = vectorAbilities[key];
-	 	var name = value["name"];
+	if (abilityName !== undefined && abilityName !== "") {
+		var is_vector_targeting = false;
+		for (var key in vectorAbilities) {
+		 	var value = vectorAbilities[key];
+		 	var name = value["name"];
+		 	if (name == abilityName) {
+		 		is_vector_targeting = true;
+		 	}
+			vector_range = value["range"];
+		}
+		$.Msg(is_vector_targeting);
+		if (GameUI.GetClickBehaviors() == CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_CAST && is_vector_targeting) {
 
-	 	if (name !== abilityName) {
-	 		return CONTINUE_PROCESSING_EVENT;
-	 	}
-
-		vector_range = value["range"];
-	}
-
-	if (GameUI.GetClickBehaviors() == CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_CAST ) {
-		return OnVectorTargetingStart(); 
+			return OnVectorTargetingStart(); 
+		}
 	}
 
 	return CONTINUE_PROCESSING_EVENT;
@@ -154,6 +156,16 @@ function Vector_sub(vec1, vec2)
 function Vector_negate(vec)
 {
 	return [-vec[0], -vec[1], -vec[2]];
+}
+
+function Vector_flatten(vec)
+{
+	return [vec[0], vec[1], 0];
+}
+
+function Vector_raiseZ(vec, inc)
+{
+	return [vec[0], vec[1], vec[2] + inc];
 }
 
 //StartTrack();
