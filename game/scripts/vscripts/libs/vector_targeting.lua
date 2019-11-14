@@ -1,14 +1,14 @@
-
 if not VectorTarget then 
 	VectorTarget = class({})
 end
 
-function VectorTarget:Init()
-	print("[VectorTarget] Initializing...")
-	CustomGameEventManager:RegisterListener("send_vector_position", Dynamic_Wrap(VectorTarget, "StartVectorCast"))
-	CustomNetTables:SetTableValue( "ability_api", "vector_target", {})
-	ListenToGameEvent('npc_spawned', Dynamic_Wrap(VectorTarget, 'OnNPCSpawned'), self)
-end
+ListenToGameEvent("game_rules_state_change", function()
+	if GameRules:State_Get() == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
+		print("[VectorTarget] Initializing...")
+		CustomGameEventManager:RegisterListener("send_vector_position", Dynamic_Wrap(VectorTarget, "StartVectorCast"))
+		CustomNetTables:SetTableValue( "ability_api", "vector_target", {})
+	end
+end, nil)
 
 function VectorTarget:StartVectorCast( event )
 	local caster = PlayerResource:GetSelectedHeroEntity(event.playerID)
@@ -24,19 +24,19 @@ function VectorTarget:StartVectorCast( event )
 	end
 
 	direction = Vector(direction.x, direction.y, 0)
+
 	if ability then
 		ability:OnVectorCastStart(position, direction)
 	end
-
 end
 
-function VectorTarget:OnNPCSpawned(event)
- 	local npc = EntIndexToHScript(event.entindex)
+ListenToGameEvent("npc_spawned", function(event)
+	local npc = EntIndexToHScript(event.entindex)
 
- 	if npc:IsRealHero() then
- 		self:AddVectorTargetingAbilities(npc)
-   	end
-end
+	if npc:IsRealHero() then
+		self:AddVectorTargetingAbilities(npc)
+	end
+end, nil)
 
 function VectorTarget:AddVectorTargetingAbilities(hero)
 	print("[VT] Search for vector targeting abilities...")
