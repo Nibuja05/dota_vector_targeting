@@ -10,7 +10,6 @@ A Helper Library to use vector targeting for dota lua abilities.
 - Set up Library:
 	- Copy vector\_targeting.lua to you 'libs' folder under vscripts (or copy folder if it doesnt exist)
 	- require the script in you addon\_game\_mode.lua
-	- Call 'VectorTarget:Init()' on InitGameMode()
 	- Add precache of targeting particle
 
 - Set up nettables:
