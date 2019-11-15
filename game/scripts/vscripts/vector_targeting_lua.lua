@@ -13,10 +13,6 @@ function test_vector_targeting_lua:GetBehavior()
 	return DOTA_ABILITY_BEHAVIOR_POINT
 end
 
-function test_vector_targeting_lua:OnSpellStart()
-	print("HEY!")
-end
-
 function test_vector_targeting_lua:OnVectorCastStart(vStartLocation, vDirection)
 	local caster = self:GetCaster()
 	local speed = 1200

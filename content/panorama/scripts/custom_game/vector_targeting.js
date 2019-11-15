@@ -1,20 +1,6 @@
 var CONSUME_EVENT = true;
 var CONTINUE_PROCESSING_EVENT = false;
 
-var active = 1;
-var select = {};
-select[0] = false;
-select[1] = false;
-select[2] = false;
-var lastSelect = -1;
-var base = $.GetContextPanel().GetParent().GetParent().GetParent();
-var x = base.FindChildTraverse('HUDElements');
-x = x.FindChildTraverse('lower_hud');
-x = x.FindChildTraverse('center_with_stats');
-x = x.FindChildTraverse('center_block');
-x = x.FindChildTraverse('AbilitiesAndStatBranch');
-var abilities = x.FindChildTraverse('abilities');
-
 //main variables
 var active_ability = undefined;
 var vector_target_particle = undefined;
@@ -30,7 +16,7 @@ function OnVectorTargetingStart()
 	var cursor = GameUI.GetCursorPosition();
 	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
-	$.Msg("[VT] Show Particle:");
+	// $.Msg("[VT] Show Particle:");
 	var casterLoc = Entities.GetAbsOrigin(mainSelected);
 	var testPos = [casterLoc[0] + 800, casterLoc[1], casterLoc[2]];
 	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
@@ -53,7 +39,7 @@ function OnVectorTargetingStart()
 
 function OnVectorTargetingEnd()
 {
-	$.Msg("[VT] Stop")
+	// $.Msg("[VT] Stop")
 
 	Particles.DestroyParticleEffect(vector_target_particle, true)
 	vector_target_particle = undefined;
@@ -67,7 +53,8 @@ function SendPosition() {
 	var ePos = GameUI.GetScreenWorldPosition(cursor);
 	var cPos = vector_start_position;
 	var pID = Players.GetLocalPlayer();
-	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "abilityName": abilityName, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
+	var unit = Players.GetLocalPlayerPortraitUnit()
+	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : unit, "abilityName": abilityName, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
 }
 
 function ShowVectorTargetingParticle()
@@ -83,10 +70,8 @@ function ShowVectorTargetingParticle()
 			$.Schedule(1 / 144, ShowVectorTargetingParticle);
 			return;
 		}
-
 		var val = Vector_sub(worldPosition, vector_start_position);
-
-		if (val[0] !== 0 && val[1] !== 0 && val[2] !== 0)
+		if (!(val[0] == 0 && val[1] == 0 && val[2] == 0))
 		{
 			var direction = Vector_normalize(Vector_sub(vector_start_position, worldPosition));
 			direction = Vector_flatten(Vector_negate(direction));
@@ -120,9 +105,8 @@ GameUI.SetMouseCallback(function(eventName, arg)
 		 	}
 			vector_range = value["range"];
 		}
-		$.Msg(is_vector_targeting);
-		if (GameUI.GetClickBehaviors() == CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_CAST && is_vector_targeting) {
-
+		// $.Msg(is_vector_targeting);
+		if (GameUI.GetClickBehaviors() == CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_CAST && is_vector_targeting && GameUI.IsMouseDown(0)) {
 			return OnVectorTargetingStart(); 
 		}
 	}

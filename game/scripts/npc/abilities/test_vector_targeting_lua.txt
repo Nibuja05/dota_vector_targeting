@@ -8,7 +8,7 @@
 	"FightRecapLevel"    				"1"
 	"AbilityTextureName"				"mirana_arrow"
 	"AbilityCastRange"   				"%range"
-	"AbilityCastPoint"   				"0"
+	"AbilityCastPoint"   				"0.3"
 	"AbilityCooldown"    				"35 32 29 26 23 20"
 	"AbilityManaCost"    				"120 130 140 150 160 170"
 	"AbilityUnitTargetTeam"   			"DOTA_UNIT_TARGET_TEAM_ENEMY"
