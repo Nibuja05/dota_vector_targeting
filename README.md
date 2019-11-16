@@ -17,3 +17,15 @@ A Helper Library to use vector targeting for dota lua abilities.
 
 - Use for your lua abilities:
 	- look up the example ability
+	- see custom functions below
+	- use `DOTA_ABILITY_BEHAVIOR_POINT` as ability behavior
+	
+	
+## Custom Functions:
+
+- `IsVectorTargeting()`: return true to make this ability a vector targeting ability
+
+- `GetVectorTargetRange()`: return an int value to set this abilities vector display length (800 is default and recommended, visuals might look odd otherwise)
+
+- `OnVectorCastStart(vStartLocation, vDirection)`: gets called when ability is actually executed. Replaces `OnSpellStart()`, which is not available for vector targeting abilities.
+
