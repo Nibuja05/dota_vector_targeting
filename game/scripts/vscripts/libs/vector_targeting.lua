@@ -80,7 +80,11 @@ function VectorTarget:OrderFilter(event)
 		if event.entindex_ability ~= 0 then
 			local ability = EntIndexToHScript(event.entindex_ability)
 			if ability:IsVectorTargeting() then
+				print(event.order_type)
 				if event.order_type == 5 then
+					local playerID = unit:GetPlayerID()
+					local player = PlayerResource:GetPlayer(playerID)
+					CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability})
 					return false
 				end
 			end

@@ -6,7 +6,12 @@ var active_ability = undefined;
 var vector_target_particle = undefined;
 var vector_start_position = undefined;
 var vector_range = 800;
+var click_start = false;
+var resetSchedule;
+var is_quick = false;
 
+
+// Start the vector targeting
 function OnVectorTargetingStart()
 {
 	var iPlayerID = Players.GetLocalPlayer();
@@ -16,7 +21,7 @@ function OnVectorTargetingStart()
 	var cursor = GameUI.GetCursorPosition();
 	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
-	// $.Msg("[VT] Show Particle:");
+	//Initialize the particle
 	var casterLoc = Entities.GetAbsOrigin(mainSelected);
 	var testPos = [casterLoc[0] + 800, casterLoc[1], casterLoc[2]];
 	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
@@ -25,28 +30,29 @@ function OnVectorTargetingStart()
 	Particles.SetParticleControl(vector_target_particle, 3, [125, 125, 0]);
 	Particles.SetParticleControl(vector_target_particle, 4, [0, 255, 0]);
 
-
+	//Calculate initial particle CPs
 	vector_start_position = worldPosition;
 	var unitPosition = Entities.GetAbsOrigin(mainSelected);
 	var direction = Vector_normalize(Vector_sub(vector_start_position, unitPosition));
 	var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
 	Particles.SetParticleControl(vector_target_particle, 2, newPosition);
 
+	//Start position updates
 	ShowVectorTargetingParticle();
 
 	return CONTINUE_PROCESSING_EVENT;
 }
 
+//End the particle effect
 function OnVectorTargetingEnd()
 {
-	// $.Msg("[VT] Stop")
-
 	Particles.DestroyParticleEffect(vector_target_particle, true)
 	vector_target_particle = undefined;
 
 	SendPosition();
 }
 
+//Send the final data to the server
 function SendPosition() {
 	var abilityName = Abilities.GetAbilityName(active_ability);
 	var cursor = GameUI.GetCursorPosition();
@@ -57,6 +63,7 @@ function SendPosition() {
 	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : unit, "abilityName": abilityName, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
 }
 
+//Updates the particle effect and detects when the ability is actually casted
 function ShowVectorTargetingParticle()
 {
 	if (vector_target_particle !== undefined)
@@ -80,42 +87,50 @@ function ShowVectorTargetingParticle()
 			Particles.SetParticleControl(vector_target_particle, 2, newPosition);
 		}
 		var mouseHold = GameUI.IsMouseDown(0);
-		if (mouseHold)
+		if (is_quick) 
 		{
-			$.Schedule(1 / 144, ShowVectorTargetingParticle);
+			if (mouseHold) 
+			{
+				OnVectorTargetingEnd();
+			} else {
+				$.Schedule(1 / 144, ShowVectorTargetingParticle);
+			}
 		} else {
-			OnVectorTargetingEnd();
+			if (mouseHold)
+			{
+				$.Schedule(1 / 144, ShowVectorTargetingParticle);
+			} else {
+				OnVectorTargetingEnd();
+			}
 		}
 	}
 }
 
+//Mouse Callback to check whever this ability was quick casted or not
 GameUI.SetMouseCallback(function(eventName, arg)
 {
-	active_ability = Abilities.GetLocalPlayerActiveAbility();
-	var abilityName = Abilities.GetAbilityName(active_ability);
-	var vectorAbilities = CustomNetTables.GetTableValue("ability_api", "vector_target");
-
-	if (abilityName !== undefined && abilityName !== "") {
-		var is_vector_targeting = false;
-		for (var key in vectorAbilities) {
-		 	var value = vectorAbilities[key];
-		 	var name = value["name"];
-		 	if (name == abilityName) {
-		 		is_vector_targeting = true;
-		 	}
-			vector_range = value["range"];
-		}
-		// $.Msg(is_vector_targeting);
-		if (GameUI.GetClickBehaviors() == CLICK_BEHAVIORS.DOTA_CLICK_BEHAVIOR_CAST && is_vector_targeting && GameUI.IsMouseDown(0)) {
-			return OnVectorTargetingStart(); 
-		}
+	click_start = true;
+	if (resetSchedule) {
+		$.CancelScheduled(resetSchedule, {});
 	}
+	resetSchedule = $.Schedule(1 / 6, function() {
+		resetSchedule = undefined;
+		click_start = false;
+	});
 
 	return CONTINUE_PROCESSING_EVENT;
 });
 
-//Some Vector Functions here:
+//Start to cast the vector ability
+function CastStart(table) {
+	active_ability = table.ability
+	is_quick = !click_start
+	if (GameUI.IsMouseDown(0) || is_quick) {
+		OnVectorTargetingStart();
+	}
+}
 
+//Some Vector Functions here:
 function Vector_normalize(vec)
 {
 	var val = 1 / Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
@@ -151,5 +166,10 @@ function Vector_raiseZ(vec, inc)
 {
 	return [vec[0], vec[1], vec[2] + inc];
 }
+
+//Register function to cast vector targeting abilities
+(function () {
+  GameEvents.Subscribe("vector_target_cast_start", CastStart );
+})();
 
 //StartTrack();
