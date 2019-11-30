@@ -102,12 +102,17 @@ function VectorTarget:OrderFilter(event)
 		local player = PlayerResource:GetPlayer(playerID)
 		-- check if valid vector cast
 		if unit.inVectorCast == nil and ability:IsVectorTargeting() and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
-			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability})
+			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability, 
+																							startWidth = ability:GetVectorTargetStartRadius(), 
+																							endWidth = ability:GetVectorTargetEndRadius(), 
+																							castLength = ability:GetVectorTargetRange(), })
 			unit.inVectorCast = event.entindex_ability
 			return false
 		else -- fire the spell or cancel the order depending on what ability is being cast
 			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_stop", {cast = unit.inVectorCast == event.entindex_ability})
 			unit.inVectorCast = nil
+			-- filter out 'regular' cast attempt
+			return unit.inVectorCast ~= event.entindex_ability
 		end
 	elseif unit.inVectorCast and CANCEL_EVENT[event.order_type] then
 		local playerID = unit:GetPlayerID()
@@ -124,6 +129,14 @@ end
 
 function CDOTABaseAbility:GetVectorTargetRange()
 	return 800
+end 
+
+function CDOTABaseAbility:GetVectorTargetStartRadius()
+	return 125
+end 
+
+function CDOTABaseAbility:GetVectorTargetEndRadius()
+	return self:GetVectorTargetStartRadius()
 end 
 
 function CDOTABaseAbility:GetVectorPosition()
