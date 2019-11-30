@@ -20,7 +20,7 @@ function test_vector_targeting_lua:OnVectorCastStart(vStartLocation, vDirection)
 	{
 		Ability = self,
     	EffectName = "particles/units/heroes/hero_mirana/mirana_spell_arrow.vpcf",
-    	vSpawnOrigin = vStartLocation,
+    	vSpawnOrigin = self:GetVectorPosition(),
     	fDistance = self:GetVectorTargetRange(),
     	fStartRadius = 64,
     	fEndRadius = 64,
@@ -32,7 +32,7 @@ function test_vector_targeting_lua:OnVectorCastStart(vStartLocation, vDirection)
     	iUnitTargetType = DOTA_UNIT_TARGET_HERO + DOTA_UNIT_TARGET_BASIC,
     	fExpireTime = GameRules:GetGameTime() + 10.0,
 		bDeleteOnHit = true,
-		vVelocity = vDirection * speed,
+		vVelocity = self:GetVectorDirection() * speed,
 		bProvidesVision = true,
 		iVisionRadius = 200,
 		iVisionTeamNumber = caster:GetTeamNumber()
