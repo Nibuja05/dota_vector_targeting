@@ -6,7 +6,6 @@ ListenToGameEvent("game_rules_state_change", function()
 	if GameRules:State_Get() == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
 		print("[VT] Initializing VectorTarget...")
 		CustomGameEventManager:RegisterListener("send_vector_position", Dynamic_Wrap(VectorTarget, "StartVectorCast"))
-		-- CustomNetTables:SetTableValue( "ability_api", "vector_target", {})
 		local mode = GameRules:GetGameModeEntity()
 		mode:SetExecuteOrderFilter(Dynamic_Wrap(VectorTarget, 'OrderFilter'), VectorTarget)
 	end
@@ -32,48 +31,13 @@ function VectorTarget:StartVectorCast( event )
 		unit.inVectorCast = nil
 		unit:CastAbilityOnPosition(position, ability, event.playerID)
 		local function OverrideSpellStart(self, position, direction)
-			self.vectorTargetPosition = position
-			self.vectorTargetDirection = direction
 			self:OnVectorCastStart(position, direction)
 		end
+		ability.vectorTargetPosition = position
+		ability.vectorTargetDirection = direction
 		ability.OnSpellStart = function(self) return OverrideSpellStart(self, position, direction) end
 	end
 end
-
--- ListenToGameEvent("npc_spawned", function(event)
-	-- local npc = EntIndexToHScript(event.entindex)
-
-	-- if npc:IsRealHero() then
-		-- if not npc.vectorInitialized then
-			-- VectorTarget:AddVectorTargetingAbilities(npc)
-			-- npc.vectorInitialized = true
-		-- end
-	-- end
--- end, nil)
-
--- function VectorTarget:AddVectorTargetingAbilities(hero)
-	-- print("[VT] Search for vector targeting abilities...")
-	-- for i=0, 10 do
-		-- local ability = hero:GetAbilityByIndex(i)
-		-- if ability then
-			-- if ability:IsVectorTargeting() then
-				-- local abilityTable = {
-					-- name = ability:GetAbilityName(),
-					-- range = 800,
-				-- }
-				-- local vectorAbilities = CustomNetTables:GetTableValue("ability_api", "vector_target")
-				-- if not vectorAbilities then
-					-- vectorAbilities = {}
-				-- end
-				-- table.insert(vectorAbilities, abilityTable)
-				-- CustomNetTables:SetTableValue( "ability_api", "vector_target", vectorAbilities)
-				-- print("[VT] Added "..ability:GetName().." to vector targeting abilities")
-
-				-- hero.hasVectorAbility = true
-			-- end
-		-- end
-	-- end
--- end
 
 CANCEL_EVENT = {[DOTA_UNIT_ORDER_MOVE_TO_POSITION] = true,
 				[DOTA_UNIT_ORDER_MOVE_TO_TARGET] = true,
@@ -95,7 +59,6 @@ CANCEL_EVENT = {[DOTA_UNIT_ORDER_MOVE_TO_POSITION] = true,
 function VectorTarget:OrderFilter(event)
 	if not event.units["0"] then return true end
 	local unit = EntIndexToHScript(event.units["0"])
-	print( unit.inVectorCast, event.order_type, unit:GetUnitName() )
 	if event.entindex_ability ~= 0 then
 		local ability = EntIndexToHScript(event.entindex_ability)
 		local playerID = unit:GetPlayerID()

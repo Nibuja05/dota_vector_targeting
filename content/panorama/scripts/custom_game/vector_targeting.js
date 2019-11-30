@@ -117,7 +117,7 @@ GameUI.SetMouseCallback(function(eventName, arg)
 	if (resetSchedule) {
 		$.CancelScheduled(resetSchedule, {});
 	}
-	resetSchedule = $.Schedule(1 / 6, function() {
+	resetSchedule = $.Schedule(1 / 20, function() {
 		resetSchedule = undefined;
 		click_start = false;
 	});
@@ -136,10 +136,8 @@ function CastStart(table) {
 
 //Stop to cast the vector ability
 function CastStop(table) {
-	$.Msg( table, "???" )
 	OnVectorTargetingEnd( table.cast == 1 );
 }
-
 
 //Some Vector Functions here:
 function Vector_normalize(vec)
