@@ -18,7 +18,7 @@ function VectorTarget:StartVectorCast( event )
 	local position2 = Vector(event.Pos2X, event.Pos2Y, event.Pos2Z)
 	local abilityName = event.abilityName
 
-	local ability = unit:FindAbilityByName(abilityName)
+	local ability = EntIndexToHScript(event.abilityIndex)
 	local direction = -(position - position2):Normalized()
 
 	if position == position2 then
@@ -64,7 +64,7 @@ function VectorTarget:OrderFilter(event)
 		local playerID = unit:GetPlayerID()
 		local player = PlayerResource:GetPlayer(playerID)
 		-- check if valid vector cast
-		if unit.inVectorCast == nil and ability:IsVectorTargeting() and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
+		if unit.inVectorCast == nil and ability and ability:IsVectorTargeting() and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
 			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability, 
 																							startWidth = ability:GetVectorTargetStartRadius(), 
 																							endWidth = ability:GetVectorTargetEndRadius(), 

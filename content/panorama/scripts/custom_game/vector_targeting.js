@@ -61,13 +61,12 @@ function OnVectorTargetingEnd(bSend)
 
 //Send the final data to the server
 function SendPosition() {
-	var abilityName = Abilities.GetAbilityName(active_ability);
 	var cursor = GameUI.GetCursorPosition();
 	var ePos = GameUI.GetScreenWorldPosition(cursor);
 	var cPos = vector_start_position;
 	var pID = Players.GetLocalPlayer();
 	var unit = Players.GetLocalPlayerPortraitUnit()
-	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : unit, "abilityName": abilityName, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
+	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : unit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
 }
 
 //Updates the particle effect and detects when the ability is actually casted
