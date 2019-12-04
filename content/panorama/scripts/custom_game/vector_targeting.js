@@ -49,8 +49,11 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 //End the particle effect
 function OnVectorTargetingEnd(bSend)
 {
-	Particles.DestroyParticleEffect(vector_target_particle, true)
-	vector_target_particle = undefined;
+	if (vector_target_particle) {
+		Particles.DestroyParticleEffect(vector_target_particle, true)
+		vector_target_particle = undefined;
+	}
+
 	if( bSend ){
 		SendPosition();
 	}
