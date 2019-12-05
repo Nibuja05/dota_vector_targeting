@@ -59,12 +59,14 @@ CANCEL_EVENT = {[DOTA_UNIT_ORDER_MOVE_TO_POSITION] = true,
 function VectorTarget:OrderFilter(event)
 	if not event.units["0"] then return true end
 	local unit = EntIndexToHScript(event.units["0"])
-	if event.entindex_ability ~= 0 then
+	if event.entindex_ability > 0 then
 		local ability = EntIndexToHScript(event.entindex_ability)
+		if not ability then return true end
 		local playerID = unit:GetPlayerID()
 		local player = PlayerResource:GetPlayer(playerID)
 		-- check if valid vector cast
-		if unit.inVectorCast == nil and ability and ability:IsVectorTargeting() and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
+
+		if unit.inVectorCast == nil and ability:IsVectorTargeting() and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
 			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability, 
 																							startWidth = ability:GetVectorTargetStartRadius(), 
 																							endWidth = ability:GetVectorTargetEndRadius(), 
