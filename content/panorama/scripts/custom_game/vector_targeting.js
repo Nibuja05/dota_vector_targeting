@@ -50,8 +50,10 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 //End the particle effect
 function OnVectorTargetingEnd(bSend)
 {
-	Particles.DestroyParticleEffect(vector_target_particle, true)
-	vector_target_particle = undefined;
+	if (vector_target_particle) {
+		Particles.DestroyParticleEffect(vector_target_particle, true)
+		vector_target_particle = undefined;
+	}
 	if( bSend ){
 		SendPosition();
 	}
@@ -63,7 +65,6 @@ function SendPosition() {
 	var ePos = GameUI.GetScreenWorldPosition(cursor);
 	var cPos = vector_start_position;
 	var pID = Players.GetLocalPlayer();
-	$.Msg( vectorTargetUnit, " / ", pID, " / ", active_ability, " / ", cPos, " / ", ePos, " / ", cursor )
 	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : vectorTargetUnit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
 	
 	$.Schedule(1 / 144, function(){GameUI.SelectUnit(vectorTargetUnit, false);} );
@@ -119,7 +120,7 @@ GameUI.SetMouseCallback(function(eventName, arg)
 	if (resetSchedule) {
 		$.CancelScheduled(resetSchedule, {});
 	}
-	resetSchedule = $.Schedule(1 / 6, function() {
+	resetSchedule = $.Schedule(1 / 20, function() {
 		resetSchedule = undefined;
 		click_start = false;
 	});
