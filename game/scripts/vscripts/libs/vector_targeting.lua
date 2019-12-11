@@ -30,11 +30,11 @@ function VectorTarget:StartVectorCast( event )
 
 	if ability then
 		unit.inVectorCast = nil
+		self.vectorTargetPosition = position
+		self.vectorTargetPosition2 = position2
+		self.vectorTargetDirection = direction
 		unit:CastAbilityOnPosition(position, ability, event.playerID)
 		local function OverrideSpellStart(self, position, direction)
-			self.vectorTargetPosition = position
-			self.vectorTargetPosition2 = position2
-			self.vectorTargetDirection = direction
 			self:OnVectorCastStart(position, direction)
 		end
 		ability.OnSpellStart = function(self) return OverrideSpellStart(self, position, direction) end
@@ -63,10 +63,11 @@ function VectorTarget:OrderFilter(event)
 	local unit = EntIndexToHScript(event.units["0"])
 	if event.entindex_ability > 0 then
 		local ability = EntIndexToHScript(event.entindex_ability)
+		if not ability then return true end
 		local playerID = unit:GetPlayerID()
 		local player = PlayerResource:GetPlayer(playerID)
 		-- check if valid vector cast
-		if ability and unit.inVectorCast == nil and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION and ability.IsVectorTargeting and ability:IsVectorTargeting() then
+		if unit.inVectorCast == nil and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION and ability.IsVectorTargeting and ability:IsVectorTargeting() then
 			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability, 
 																							startWidth = ability:GetVectorTargetStartRadius(), 
 																							endWidth = ability:GetVectorTargetEndRadius(), 
