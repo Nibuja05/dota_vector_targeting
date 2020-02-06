@@ -9,6 +9,7 @@ var vector_range = 800;
 var click_start = false;
 var resetSchedule;
 var is_quick = false;
+var vectorTargetUnit;
 
 
 // Start the vector targeting
@@ -18,6 +19,7 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 	var selectedEntities = Players.GetSelectedEntities( iPlayerID );
 	var mainSelected = Players.GetLocalPlayerPortraitUnit();
 	var mainSelectedName = Entities.GetUnitName(mainSelected);
+	vectorTargetUnit = mainSelected;
 	var cursor = GameUI.GetCursorPosition();
 	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
 	// particle variables
@@ -42,7 +44,6 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 
 	//Start position updates
 	ShowVectorTargetingParticle();
-
 	return CONTINUE_PROCESSING_EVENT;
 }
 
@@ -53,7 +54,6 @@ function OnVectorTargetingEnd(bSend)
 		Particles.DestroyParticleEffect(vector_target_particle, true)
 		vector_target_particle = undefined;
 	}
-
 	if( bSend ){
 		SendPosition();
 	}
@@ -65,8 +65,9 @@ function SendPosition() {
 	var ePos = GameUI.GetScreenWorldPosition(cursor);
 	var cPos = vector_start_position;
 	var pID = Players.GetLocalPlayer();
-	var unit = Players.GetLocalPlayerPortraitUnit()
-	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : unit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
+	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : vectorTargetUnit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
+	
+	$.Schedule(1 / 144, function(){GameUI.SelectUnit(vectorTargetUnit, false);} );
 }
 
 //Updates the particle effect and detects when the ability is actually casted
@@ -140,6 +141,7 @@ function CastStart(table) {
 function CastStop(table) {
 	OnVectorTargetingEnd( table.cast == 1 );
 }
+
 
 //Some Vector Functions here:
 function Vector_normalize(vec)
