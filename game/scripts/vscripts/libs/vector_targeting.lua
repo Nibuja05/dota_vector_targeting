@@ -12,7 +12,7 @@ ListenToGameEvent("game_rules_state_change", function()
 	end
 end, nil)
 
-function VectorTarget:StartVectorCast( event )
+function VectorTarget:StartVectorCast(event)
 	local caster = PlayerResource:GetSelectedHeroEntity(event.playerID)
 	local unit = EntIndexToHScript(event.unit)
 	local position = Vector(event.PosX, event.PosY, event.PosZ)
@@ -30,9 +30,9 @@ function VectorTarget:StartVectorCast( event )
 
 	if ability then
 		unit.isVectorCasting = true
-		self.vectorTargetPosition = position
-		self.vectorTargetPosition2 = position2
-		self.vectorTargetDirection = direction
+		ability.vectorTargetPosition = position
+		ability.vectorTargetPosition2 = position2
+		ability.vectorTargetDirection = direction
 		ExecuteOrderFromTable({
 			UnitIndex = event.unit,
 			OrderType = DOTA_UNIT_ORDER_CAST_POSITION,
@@ -72,7 +72,19 @@ function VectorTarget:OrderFilter(event)
 		local ability = EntIndexToHScript(event.entindex_ability)
 		if not ability then return true end
 		local playerID = unit:GetPlayerID()
+
+		-- check if the player is a real player or a bot, if its a bot, change the player to be the first real player found
+		if PlayerResource:IsFakeClient(playerID) == true then
+			local teamNumber = unit:GetTeamNumber()
+			for i=0,PlayerResource:GetPlayerCountForTeam(teamNumber) do
+				playerID = PlayerResource:GetNthPlayerIDOnTeam(teamNumber, i)
+				if playerID >= 0 and PlayerResource:IsFakeClient(playerID) == false then
+					break
+				end
+			end
+		end
 		local player = PlayerResource:GetPlayer(playerID)
+
 		-- check if valid vector cast
 		if unit.inVectorCast == nil and event.order_type == DOTA_UNIT_ORDER_CAST_POSITION and ability.IsVectorTargeting and ability:IsVectorTargeting() then
 			CustomGameEventManager:Send_ServerToPlayer(player, "vector_target_cast_start", {ability = event.entindex_ability, 
