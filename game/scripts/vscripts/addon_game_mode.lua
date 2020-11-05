@@ -27,6 +27,8 @@ function CAddonTemplateGameMode:InitGameMode()
 	print( "Template addon is loaded." )
 	GameRules:GetGameModeEntity():SetThink( "OnThink", self, "GlobalThink", 2 )
 	ListenToGameEvent('npc_spawned', Dynamic_Wrap(CAddonTemplateGameMode, 'OnNPCSpawned'), self)
+	GameRules:GetGameModeEntity():SetExecuteOrderFilter( Dynamic_Wrap( VectorTarget, "OrderFilter" ), self )
+	ListenToGameEvent('dota_player_learned_ability', Dynamic_Wrap( VectorTarget, 'OnAbilityLearned'), self)
 end
 
 function CAddonTemplateGameMode:OnNPCSpawned(event)
