@@ -1,17 +1,86 @@
+var lowerHud = $.GetContextPanel().GetParent().GetParent().GetParent().FindChildTraverse("HUDElements").FindChildTraverse("lower_hud");
+var abilities = lowerHud.FindChildTraverse("abilities");
+var items =  lowerHud.FindChildTraverse("inventory_items");
+
+///// Vector Targeting
 var CONSUME_EVENT = true;
 var CONTINUE_PROCESSING_EVENT = false;
 
 //main variables
-var active_ability = undefined;
 var vector_target_particle = undefined;
+var vectorTargetUnit = undefined;
 var vector_start_position = undefined;
 var vector_range = 800;
-var click_start = false;
-var resetSchedule;
-var is_quick = false;
-var vectorTargetUnit;
+var vectorAbilityTable = {};
+var clickBehavior = 0;
+var currentlyActiveVectorTargetAbility;
 
+GameEvents.Subscribe("dota_player_learned_ability", CheckUnitVectorAbilities);
+GameEvents.Subscribe("dota_player_update_query_unit", CheckUnitVectorAbilities);
+GameEvents.Subscribe("dota_player_update_selected_unit", CheckUnitVectorAbilities);
 
+CheckUnitVectorAbilities()
+function CheckUnitVectorAbilities( ){
+	var unit = Players.GetLocalPlayerPortraitUnit();
+	vectorAbilityTable = {};
+	for (i = 0; i <= Entities.GetAbilityCount( unit ); i++){
+		var abilityCont = abilities.FindChildTraverse("Ability"+i);
+		
+		if(abilityCont != null){
+			var abilityButton = abilityCont.FindChildTraverse("ButtonSize")
+			var abilityImage = abilityCont.FindChildTraverse("AbilityImage")
+			var abilityName = abilityImage.abilityname
+			var abilityIndex = 	Entities.GetAbilityByName( unit, abilityName )
+			var filteredBehavior = Abilities.GetBehavior( abilityIndex ) & DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING;
+			if(filteredBehavior == DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING){
+				vectorAbilityTable[abilityCont] = true;
+			}
+		}
+	}
+	for (i = 0; i <= 5; i++){
+		var abilityCont = items.FindChildTraverse("inventory_slot_"+i);
+		if(abilityCont != null){
+			var abilityImage = abilityCont.FindChildTraverse("ItemImage")
+			var abilityName = abilityImage.abilityname
+			var abilityIndex = 	Entities.GetItemInSlot( unit, i )
+			var filteredBehavior = Abilities.GetBehavior( abilityIndex ) & DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING;
+			if(filteredBehavior == DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING){
+				vectorAbilityTable[abilityCont] = true;
+			}
+		}
+	}
+}
+
+//Mouse Callback to check whever this ability was quick casted or not
+GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
+{
+	clickBehavior = GameUI.GetClickBehaviors();
+	if(clickBehavior == 3 && currentlyActiveVectorTargetAbility != undefined){
+		var netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility.entindex )
+		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+	}
+	return CONTINUE_PROCESSING_EVENT;
+});
+
+$.RegisterForUnhandledEvent( "StyleClassesChanged", CheckAbilityVectorTargeting );
+function CheckAbilityVectorTargeting( table ){
+	if( table == null ){return}
+	if( vectorAbilityTable[table] == true ){
+		$
+		if( table.hasBeenMarkedActivated && !table.BHasClass( "is_active" )){
+			table.hasBeenMarkedActivated = false
+			currentlyActiveVectorTargetAbility = undefined
+			OnVectorTargetingEnd( false )
+		} else if( !table.hasBeenMarkedActivated && table.BHasClass( "is_active" ) ) {
+			table.hasBeenMarkedActivated = true
+			currentlyActiveVectorTargetAbility = table
+			if( GameUI.GetClickBehaviors() == 9 ){
+				var netTable = CustomNetTables.GetTableValue( "vector_targeting", table.entindex )
+				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+			}
+		}
+	}
+}
 // Start the vector targeting
 function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 {
@@ -30,6 +99,7 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 	var casterLoc = Entities.GetAbsOrigin(mainSelected);
 	var testPos = [casterLoc[0] + Math.min( 1500, vector_range), casterLoc[1], casterLoc[2]];
 	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
+	vectorTargetUnit = mainSelected
 	Particles.SetParticleControl(vector_target_particle, 1, Vector_raiseZ(worldPosition, 100));
 	Particles.SetParticleControl(vector_target_particle, 2, Vector_raiseZ(testPos, 100));
 	Particles.SetParticleControl(vector_target_particle, 3, [endWidth, startWidth, 0]);
@@ -53,21 +123,8 @@ function OnVectorTargetingEnd(bSend)
 	if (vector_target_particle) {
 		Particles.DestroyParticleEffect(vector_target_particle, true)
 		vector_target_particle = undefined;
+		vectorTargetUnit = undefined;
 	}
-	if( bSend ){
-		SendPosition();
-	}
-}
-
-//Send the final data to the server
-function SendPosition() {
-	var cursor = GameUI.GetCursorPosition();
-	var ePos = GameUI.GetScreenWorldPosition(cursor);
-	var cPos = vector_start_position;
-	var pID = Players.GetLocalPlayer();
-	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : vectorTargetUnit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
-	
-	$.Schedule(1 / 144, function(){GameUI.SelectUnit(vectorTargetUnit, false);} );
 }
 
 //Updates the particle effect and detects when the ability is actually casted
@@ -93,55 +150,12 @@ function ShowVectorTargetingParticle()
 
 			Particles.SetParticleControl(vector_target_particle, 2, newPosition);
 		}
-		var mouseHold = GameUI.IsMouseDown(0);
-		if (is_quick) 
-		{
-			if (mouseHold) 
-			{
-				CastStop( {cast:1} );
-			} else {
-				$.Schedule(1 / 144, ShowVectorTargetingParticle);
-			}
-		} else {
-			if (mouseHold)
-			{
-				$.Schedule(1 / 144, ShowVectorTargetingParticle);
-			} else {
-				CastStop( {cast:1} );
-			}
+		if( mainSelected != vectorTargetUnit ){
+			GameUI.SelectUnit( vectorTargetUnit, false )
 		}
+		$.Schedule(1 / 144, ShowVectorTargetingParticle);
 	}
 }
-
-//Mouse Callback to check whever this ability was quick casted or not
-GameUI.SetMouseCallback(function(eventName, arg)
-{
-	click_start = true;
-	if (resetSchedule) {
-		$.CancelScheduled(resetSchedule, {});
-	}
-	resetSchedule = $.Schedule(1 / 20, function() {
-		resetSchedule = undefined;
-		click_start = false;
-	});
-
-	return CONTINUE_PROCESSING_EVENT;
-});
-
-//Start to cast the vector ability
-function CastStart(table) {
-	active_ability = table.ability
-	is_quick = !click_start
-	if (GameUI.IsMouseDown(0) || is_quick) {
-		OnVectorTargetingStart(table.startWidth, table.endWidth, table.castLength);
-	}
-}
-
-//Stop to cast the vector ability
-function CastStop(table) {
-	OnVectorTargetingEnd( table.cast == 1 );
-}
-
 
 //Some Vector Functions here:
 function Vector_normalize(vec)
@@ -179,11 +193,3 @@ function Vector_raiseZ(vec, inc)
 {
 	return [vec[0], vec[1], vec[2] + inc];
 }
-
-//Register function to cast vector targeting abilities
-(function () {
-  GameEvents.Subscribe("vector_target_cast_start", CastStart );
-  GameEvents.Subscribe("vector_target_cast_stop", CastStop );
-})();
-
-//StartTrack();
