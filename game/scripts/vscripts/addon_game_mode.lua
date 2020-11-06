@@ -1,6 +1,5 @@
 -- Generated from template
 
-require('libs/util')
 require('libs/vector_targeting')
 
 if CAddonTemplateGameMode == nil then
