@@ -2,37 +2,49 @@ if not VectorTarget then
 	VectorTarget = class({})
 end
 
-CANCEL_EVENT = {[DOTA_UNIT_ORDER_MOVE_TO_POSITION] = true,
-				[DOTA_UNIT_ORDER_MOVE_TO_TARGET] = true,
-				[DOTA_UNIT_ORDER_ATTACK_MOVE] = true,
-				[DOTA_UNIT_ORDER_ATTACK_TARGET] = true,
-				[DOTA_UNIT_ORDER_CAST_TARGET] = true,
-				[DOTA_UNIT_ORDER_CAST_TARGET_TREE] = true,
-				[DOTA_UNIT_ORDER_CAST_NO_TARGET] = true,
-				[DOTA_UNIT_ORDER_HOLD_POSITION] = true,
-				[DOTA_UNIT_ORDER_DROP_ITEM] = true,
-				[DOTA_UNIT_ORDER_GIVE_ITEM] = true,
-				[DOTA_UNIT_ORDER_PICKUP_ITEM] = true,
-				[DOTA_UNIT_ORDER_PICKUP_RUNE] = true,
-				[DOTA_UNIT_ORDER_STOP] = true,
-				[DOTA_UNIT_ORDER_MOVE_TO_DIRECTION] = true,
-				[DOTA_UNIT_ORDER_PATROL] = true,
-				}
+ListenToGameEvent("game_rules_state_change", function()
+	if GameRules:State_Get() == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
+		VectorTarget:Init()
+	end
+end, nil)
+
+function VectorTarget:Init()
+	print("[VT] Initializing VectorTarget...")
+	local mode = GameRules:GetGameModeEntity()
+	mode:SetExecuteOrderFilter(Dynamic_Wrap(VectorTarget, 'OrderFilter'), VectorTarget)
+	ListenToGameEvent('dota_player_learned_ability', Dynamic_Wrap(VectorTarget, 'OnAbilityLearned'), self)
+	ListenToGameEvent('dota_item_purchased', Dynamic_Wrap(VectorTarget, 'OnItemBought'), self)
+	ListenToGameEvent('dota_item_picked_up', Dynamic_Wrap(VectorTarget, 'OnItemPickup'), self)
+end
 
 function VectorTarget:OrderFilter(event)
 	if not event.units["0"] then return true end
 	local unit = EntIndexToHScript(event.units["0"])
-	local ability = EntIndexToHScript( event.entindex_ability )
-	if ability and ability.GetBehavior and ability:GetBehavior() and HasBit( ability:GetBehavior(), DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING ) then
+	local ability = EntIndexToHScript(event.entindex_ability)
+
+	if not ability or not ability.GetBehavior then return true end
+	local behavior = ability:GetBehavior()
+
+	-- check if the ability exists and if it is Vector targeting
+	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) then
+
 		if event.order_type == DOTA_UNIT_ORDER_VECTOR_TARGET_POSITION then
-			ability.vectorTargetPosition2 = Vector( event.position_x, event.position_y, 0 )
+			ability.vectorTargetPosition2 = Vector(event.position_x, event.position_y, 0)
 		end
+
 		if event.order_type == DOTA_UNIT_ORDER_CAST_POSITION then
-			ability.vectorTargetPosition = Vector( event.position_x, event.position_y, 0 )
-			local position = ability:GetVectorPosition()
-			local direction = CalculateDirection( ability.vectorTargetPosition2, position )
-			direction = Vector(direction.x, direction.y, 0):Normalized()
+			ability.vectorTargetPosition = Vector(event.position_x, event.position_y, 0)
+			local position = ability.vectorTargetPosition
+			local position2 = ability.vectorTargetPosition2
+			local direction = (position2 - position):Normalized()
+
+			--Change direction if just clicked on the same position
+			if position == position2 then
+				direction = (position - unit:GetAbsOrigin()):Normalized()
+			end
+			direction = Vector(direction.x, direction.y, 0)
 			ability.vectorTargetDirection = direction
+
 			local function OverrideSpellStart(self, position, direction)
 				self:OnVectorCastStart(position, direction)
 			end
@@ -42,21 +54,58 @@ function VectorTarget:OrderFilter(event)
 	return true
 end
 
-function VectorTarget:OnAbilityLearned( event )
+function VectorTarget:UpdateNettable(ability)
+	local vectorData = {
+		startWidth = ability:GetVectorTargetStartRadius(),
+		endWidth = ability:GetVectorTargetEndRadius(),
+		castLength = ability:GetVectorTargetRange()
+	}
+	CustomNetTables:SetTableValue("vector_targeting", tostring(ability:entindex()), vectorData)
+end
+
+function VectorTarget:OnAbilityLearned(event)
 	local playerID = event.PlayerID
 	local hero = PlayerResource:GetSelectedHeroEntity(playerID)
 	local ability = hero:FindAbilityByName(event.abilityname)
-	local vector_data = {}
-	if ability and HasBit( ability:GetBehavior(), DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING ) then
-		vector_data.startWidth = ability:GetVectorTargetStartRadius()
-		vector_data.endWidth = ability:GetVectorTargetEndRadius()
-		vector_data.castLength = ability:GetVectorTargetRange()
-		CustomNetTables:SetTableValue( "vector_targeting", ability:entindex().."", vector_data )
+
+	if not ability or not ability.GetBehavior then return true end
+	local behavior = ability:GetBehavior()
+
+	-- check if the ability exists and if it is Vector targeting
+	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
+		VectorTarget:UpdateNettable(ability)
 	end
 end
 
-function CDOTABaseAbility:IsVectorTargeting()
-	return false
+function VectorTarget:OnItemPickup(event)
+	local index = event.item_entindex
+	if not index then
+		index = event.ItemEntityIndex
+	end
+	local ability = EntIndexToHScript(index)
+
+	if not ability or not ability.GetBehavior then return true end
+	local behavior = ability:GetBehavior()
+
+	-- check if the item exists and if it is Vector targeting
+	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
+		VectorTarget:UpdateNettable(ability)
+	end
+end
+
+function VectorTarget:OnItemBought(event)
+	local playerID = event.PlayerID
+	local hero = PlayerResource:GetSelectedHeroEntity(playerID)
+
+	for i=0, 15 do
+		local item = hero:GetItemInSlot(i)
+		if item and item.GetBehavior then
+			local behavior = item:GetBehavior()
+			if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
+				VectorTarget:UpdateNettable(item)
+			end
+		end
+	end
 end
 
 function CDOTABaseAbility:GetVectorTargetRange()
@@ -85,4 +134,8 @@ end
 
 function CDOTABaseAbility:OnVectorCastStart(vStartLocation, vDirection)
 	print("Vector Cast")
+end
+
+function CDOTABaseAbility:UpdateVectorValues()
+	VectorTarget:UpdateNettable(self)
 end

@@ -1,116 +1,114 @@
-var lowerHud = $.GetContextPanel().GetParent().GetParent().GetParent().FindChildTraverse("HUDElements").FindChildTraverse("lower_hud");
-var abilities = lowerHud.FindChildTraverse("abilities");
-var items =  lowerHud.FindChildTraverse("inventory_items");
+// ----------------------------------------------------------
+// Vector Targeting Library
+// ========================
+// Version: 1.0
+// Github: https://github.com/Nibuja05/dota_vector_targeting
+// ----------------------------------------------------------
 
-///// Vector Targeting
-var CONSUME_EVENT = true;
-var CONTINUE_PROCESSING_EVENT = false;
+/// Vector Targeting
+const CONSUME_EVENT = true;
+const CONTINUE_PROCESSING_EVENT = false;
 
 //main variables
-var vector_target_particle = undefined;
-var vectorTargetUnit = undefined;
-var vector_start_position = undefined;
-var vector_range = 800;
-var vectorAbilityTable = {};
-var clickBehavior = 0;
+var vectorTargetParticle;
+var vectorTargetUnit;
+var vectorStartPosition;
+var vectorRange = 800;
 var currentlyActiveVectorTargetAbility;
-
-GameEvents.Subscribe("dota_player_learned_ability", CheckUnitVectorAbilities);
-GameEvents.Subscribe("dota_player_update_query_unit", CheckUnitVectorAbilities);
-GameEvents.Subscribe("dota_player_update_selected_unit", CheckUnitVectorAbilities);
-
-CheckUnitVectorAbilities()
-function CheckUnitVectorAbilities( ){
-	var unit = Players.GetLocalPlayerPortraitUnit();
-	vectorAbilityTable = {};
-	for (i = 0; i <= Entities.GetAbilityCount( unit ); i++){
-		var abilityCont = abilities.FindChildTraverse("Ability"+i);
-		
-		if(abilityCont != null){
-			var abilityButton = abilityCont.FindChildTraverse("ButtonSize")
-			var abilityImage = abilityCont.FindChildTraverse("AbilityImage")
-			var abilityName = abilityImage.abilityname
-			var abilityIndex = 	Entities.GetAbilityByName( unit, abilityName )
-			var filteredBehavior = Abilities.GetBehavior( abilityIndex ) & DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING;
-			if(filteredBehavior == DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING){
-				vectorAbilityTable[abilityCont] = true;
-			}
-		}
-	}
-	for (i = 0; i <= 5; i++){
-		var abilityCont = items.FindChildTraverse("inventory_slot_"+i);
-		if(abilityCont != null){
-			var abilityImage = abilityCont.FindChildTraverse("ItemImage")
-			var abilityName = abilityImage.abilityname
-			var abilityIndex = 	Entities.GetItemInSlot( unit, i )
-			var filteredBehavior = Abilities.GetBehavior( abilityIndex ) & DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING;
-			if(filteredBehavior == DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING){
-				vectorAbilityTable[abilityCont] = true;
-			}
-		}
-	}
-}
 
 //Mouse Callback to check whever this ability was quick casted or not
 GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
 {
-	clickBehavior = GameUI.GetClickBehaviors();
-	if(clickBehavior == 3 && currentlyActiveVectorTargetAbility != undefined){
-		var netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility.entindex )
+	if(GameUI.GetClickBehaviors() == 3 && currentlyActiveVectorTargetAbility != undefined){
+		const netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility )
 		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+		currentlyActiveVectorTargetAbility = undefined;
 	}
 	return CONTINUE_PROCESSING_EVENT;
 });
 
-$.RegisterForUnhandledEvent( "StyleClassesChanged", CheckAbilityVectorTargeting );
-function CheckAbilityVectorTargeting( table ){
-	if( table == null ){return}
-	if( vectorAbilityTable[table] == true ){
-		$
-		if( table.hasBeenMarkedActivated && !table.BHasClass( "is_active" )){
-			table.hasBeenMarkedActivated = false
-			currentlyActiveVectorTargetAbility = undefined
-			OnVectorTargetingEnd( false )
-		} else if( !table.hasBeenMarkedActivated && table.BHasClass( "is_active" ) ) {
-			table.hasBeenMarkedActivated = true
-			currentlyActiveVectorTargetAbility = table
-			if( GameUI.GetClickBehaviors() == 9 ){
-				var netTable = CustomNetTables.GetTableValue( "vector_targeting", table.entindex )
+//Listen for class changes
+$.RegisterForUnhandledEvent("StyleClassesChanged", CheckAbilityVectorTargeting );
+function CheckAbilityVectorTargeting(panel){
+	if(panel == null){return;}
+
+	//Check if the panel is an ability or item panel
+	const abilityIndex = GetAbilityFromPanel(panel)
+	if (abilityIndex >= 0) {
+
+		//Check if the ability/item is vector targeted
+		const netTable = CustomNetTables.GetTableValue("vector_targeting", abilityIndex);
+		if (netTable == undefined) {return;}
+
+		//Check if the ability/item gets activated or is finished
+		if (panel.BHasClass("is_active")) {
+			currentlyActiveVectorTargetAbility = abilityIndex;
+			if(GameUI.GetClickBehaviors() == 9 ){
 				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
 			}
+		} else {
+			OnVectorTargetingEnd();
 		}
 	}
 }
+
+//Find the ability/item entindex from the panorama panel
+function GetAbilityFromPanel(panel) {
+	if (panel.paneltype == "DOTAAbilityPanel") {
+
+		// Be sure that it is a default ability Button
+		const parent = panel.GetParent();
+		if (parent != undefined && (parent.id == "abilities" || parent.id == "inventory_list")) {
+			const abilityImage = panel.FindChildTraverse("AbilityImage")
+			let abilityIndex = abilityImage.contextEntityIndex;
+			let abilityName = abilityImage.abilityname
+
+			//Will be undefined for items
+			if (abilityName) {
+				return abilityIndex;
+			}
+
+			//Return item entindex instead
+			const itemImage = panel.FindChildTraverse("ItemImage")
+			abilityIndex = itemImage.contextEntityIndex;
+			return abilityIndex;
+		}
+	}
+	return -1;
+}
+
 // Start the vector targeting
 function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 {
-	var iPlayerID = Players.GetLocalPlayer();
-	var selectedEntities = Players.GetSelectedEntities( iPlayerID );
-	var mainSelected = Players.GetLocalPlayerPortraitUnit();
-	var mainSelectedName = Entities.GetUnitName(mainSelected);
+	const iPlayerID = Players.GetLocalPlayer();
+	const selectedEntities = Players.GetSelectedEntities( iPlayerID );
+	const mainSelected = Players.GetLocalPlayerPortraitUnit();
+	const mainSelectedName = Entities.GetUnitName(mainSelected);
 	vectorTargetUnit = mainSelected;
-	var cursor = GameUI.GetCursorPosition();
-	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
+	const cursor = GameUI.GetCursorPosition();
+	const worldPosition = GameUI.GetScreenWorldPosition(cursor);
+
 	// particle variables
-	var startWidth = fStartWidth || 125
-	var endWidth = fEndWidth || startWidth
-	vector_range = fCastLength || 800
+	const startWidth = fStartWidth || 125
+	const endWidth = fEndWidth || startWidth
+	vectorRange = fCastLength || 800
+
 	//Initialize the particle
-	var casterLoc = Entities.GetAbsOrigin(mainSelected);
-	var testPos = [casterLoc[0] + Math.min( 1500, vector_range), casterLoc[1], casterLoc[2]];
-	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
+	const casterLoc = Entities.GetAbsOrigin(mainSelected);
+	const secondLoc = [casterLoc[0] + Math.min( 1500, vectorRange), casterLoc[1], casterLoc[2]];
+	vectorTargetParticle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
 	vectorTargetUnit = mainSelected
-	Particles.SetParticleControl(vector_target_particle, 1, Vector_raiseZ(worldPosition, 100));
-	Particles.SetParticleControl(vector_target_particle, 2, Vector_raiseZ(testPos, 100));
-	Particles.SetParticleControl(vector_target_particle, 3, [endWidth, startWidth, 0]);
-	Particles.SetParticleControl(vector_target_particle, 4, [0, 255, 0]);
+	Particles.SetParticleControl(vectorTargetParticle, 1, Vector_raiseZ(worldPosition, 100));
+	Particles.SetParticleControl(vectorTargetParticle, 2, Vector_raiseZ(secondLoc, 100));
+	Particles.SetParticleControl(vectorTargetParticle, 3, [endWidth, startWidth, 0]);
+	Particles.SetParticleControl(vectorTargetParticle, 4, [0, 255, 0]);
 
 	//Calculate initial particle CPs
-	vector_start_position = worldPosition;
-	var unitPosition = Entities.GetAbsOrigin(mainSelected);
-	var direction = Vector_normalize(Vector_sub(vector_start_position, unitPosition));
-	var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
-	Particles.SetParticleControl(vector_target_particle, 2, newPosition);
+	vectorStartPosition = worldPosition;
+	const unitPosition = Entities.GetAbsOrigin(mainSelected);
+	const direction = Vector_normalize(Vector_sub(vectorStartPosition, unitPosition));
+	const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
+	Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
 
 	//Start position updates
 	ShowVectorTargetingParticle();
@@ -118,11 +116,11 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 }
 
 //End the particle effect
-function OnVectorTargetingEnd(bSend)
+function OnVectorTargetingEnd()
 {
-	if (vector_target_particle) {
-		Particles.DestroyParticleEffect(vector_target_particle, true)
-		vector_target_particle = undefined;
+	if (vectorTargetParticle) {
+		Particles.DestroyParticleEffect(vectorTargetParticle, true)
+		vectorTargetParticle = undefined;
 		vectorTargetUnit = undefined;
 	}
 }
@@ -130,28 +128,28 @@ function OnVectorTargetingEnd(bSend)
 //Updates the particle effect and detects when the ability is actually casted
 function ShowVectorTargetingParticle()
 {
-	if (vector_target_particle !== undefined)
+	if (vectorTargetParticle !== undefined)
 	{
-		var mainSelected = Players.GetLocalPlayerPortraitUnit();
-		var cursor = GameUI.GetCursorPosition();
-		var worldPosition = GameUI.GetScreenWorldPosition(cursor);
+		const mainSelected = Players.GetLocalPlayerPortraitUnit();
+		const cursor = GameUI.GetCursorPosition();
+		const worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
 		if (worldPosition == null)
 		{
 			$.Schedule(1 / 144, ShowVectorTargetingParticle);
 			return;
 		}
-		var val = Vector_sub(worldPosition, vector_start_position);
-		if (!(val[0] == 0 && val[1] == 0 && val[2] == 0))
+		const testVec = Vector_sub(worldPosition, vectorStartPosition);
+		if (!(testVec[0] == 0 && testVec[1] == 0 && testVec[2] == 0))
 		{
-			var direction = Vector_normalize(Vector_sub(vector_start_position, worldPosition));
+			let direction = Vector_normalize(Vector_sub(vectorStartPosition, worldPosition));
 			direction = Vector_flatten(Vector_negate(direction));
-			var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
+			const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
 
-			Particles.SetParticleControl(vector_target_particle, 2, newPosition);
+			Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
 		}
 		if( mainSelected != vectorTargetUnit ){
-			GameUI.SelectUnit( vectorTargetUnit, false )
+			GameUI.SelectUnit(vectorTargetUnit, false )
 		}
 		$.Schedule(1 / 144, ShowVectorTargetingParticle);
 	}
@@ -160,7 +158,7 @@ function ShowVectorTargetingParticle()
 //Some Vector Functions here:
 function Vector_normalize(vec)
 {
-	var val = 1 / Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
+	const val = 1 / Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
 	return [vec[0] * val, vec[1] * val, vec[2] * val];
 }
 
