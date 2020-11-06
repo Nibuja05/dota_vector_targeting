@@ -1,46 +1,114 @@
-var CONSUME_EVENT = true;
-var CONTINUE_PROCESSING_EVENT = false;
+// ----------------------------------------------------------
+// Vector Targeting Library
+// ========================
+// Version: 1.0
+// Github: https://github.com/Nibuja05/dota_vector_targeting
+// ----------------------------------------------------------
+
+/// Vector Targeting
+const CONSUME_EVENT = true;
+const CONTINUE_PROCESSING_EVENT = false;
 
 //main variables
-var active_ability = undefined;
-var vector_target_particle = undefined;
-var vector_start_position = undefined;
-var vector_range = 800;
-var click_start = false;
-var resetSchedule;
-var is_quick = false;
+var vectorTargetParticle;
 var vectorTargetUnit;
+var vectorStartPosition;
+var vectorRange = 800;
+var currentlyActiveVectorTargetAbility;
 
+//Mouse Callback to check whever this ability was quick casted or not
+GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
+{
+	if(GameUI.GetClickBehaviors() == 3 && currentlyActiveVectorTargetAbility != undefined){
+		const netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility )
+		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+		currentlyActiveVectorTargetAbility = undefined;
+	}
+	return CONTINUE_PROCESSING_EVENT;
+});
+
+//Listen for class changes
+$.RegisterForUnhandledEvent("StyleClassesChanged", CheckAbilityVectorTargeting );
+function CheckAbilityVectorTargeting(panel){
+	if(panel == null){return;}
+
+	//Check if the panel is an ability or item panel
+	const abilityIndex = GetAbilityFromPanel(panel)
+	if (abilityIndex >= 0) {
+
+		//Check if the ability/item is vector targeted
+		const netTable = CustomNetTables.GetTableValue("vector_targeting", abilityIndex);
+		if (netTable == undefined) {return;}
+
+		//Check if the ability/item gets activated or is finished
+		if (panel.BHasClass("is_active")) {
+			currentlyActiveVectorTargetAbility = abilityIndex;
+			if(GameUI.GetClickBehaviors() == 9 ){
+				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+			}
+		} else {
+			OnVectorTargetingEnd();
+		}
+	}
+}
+
+//Find the ability/item entindex from the panorama panel
+function GetAbilityFromPanel(panel) {
+	if (panel.paneltype == "DOTAAbilityPanel") {
+
+		// Be sure that it is a default ability Button
+		const parent = panel.GetParent();
+		if (parent != undefined && (parent.id == "abilities" || parent.id == "inventory_list")) {
+			const abilityImage = panel.FindChildTraverse("AbilityImage")
+			let abilityIndex = abilityImage.contextEntityIndex;
+			let abilityName = abilityImage.abilityname
+
+			//Will be undefined for items
+			if (abilityName) {
+				return abilityIndex;
+			}
+
+			//Return item entindex instead
+			const itemImage = panel.FindChildTraverse("ItemImage")
+			abilityIndex = itemImage.contextEntityIndex;
+			return abilityIndex;
+		}
+	}
+	return -1;
+}
 
 // Start the vector targeting
 function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 {
-	var iPlayerID = Players.GetLocalPlayer();
-	var selectedEntities = Players.GetSelectedEntities( iPlayerID );
-	var mainSelected = Players.GetLocalPlayerPortraitUnit();
-	var mainSelectedName = Entities.GetUnitName(mainSelected);
+	const iPlayerID = Players.GetLocalPlayer();
+	const selectedEntities = Players.GetSelectedEntities( iPlayerID );
+	const mainSelected = Players.GetLocalPlayerPortraitUnit();
+	const mainSelectedName = Entities.GetUnitName(mainSelected);
 	vectorTargetUnit = mainSelected;
-	var cursor = GameUI.GetCursorPosition();
-	var worldPosition = GameUI.GetScreenWorldPosition(cursor);
+	const cursor = GameUI.GetCursorPosition();
+	const worldPosition = GameUI.GetScreenWorldPosition(cursor);
+
 	// particle variables
-	var startWidth = fStartWidth || 125
-	var endWidth = fEndWidth || startWidth
-	vector_range = fCastLength || 800
+	const startWidth = fStartWidth || 125
+	const endWidth = fEndWidth || startWidth
+	vectorRange = fCastLength || 800
+
 	//Initialize the particle
-	var casterLoc = Entities.GetAbsOrigin(mainSelected);
-	var testPos = [casterLoc[0] + Math.min( 1500, vector_range), casterLoc[1], casterLoc[2]];
-	vector_target_particle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
-	Particles.SetParticleControl(vector_target_particle, 1, Vector_raiseZ(worldPosition, 100));
-	Particles.SetParticleControl(vector_target_particle, 2, Vector_raiseZ(testPos, 100));
-	Particles.SetParticleControl(vector_target_particle, 3, [endWidth, startWidth, 0]);
-	Particles.SetParticleControl(vector_target_particle, 4, [0, 255, 0]);
+	const casterLoc = Entities.GetAbsOrigin(mainSelected);
+	const secondLoc = [casterLoc[0] + Math.min( 1500, vectorRange), casterLoc[1], casterLoc[2]];
+	vectorTargetParticle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
+	vectorTargetUnit = mainSelected
+	Particles.SetParticleControl(vectorTargetParticle, 1, Vector_raiseZ(worldPosition, 100));
+	Particles.SetParticleControl(vectorTargetParticle, 2, Vector_raiseZ(secondLoc, 100));
+	Particles.SetParticleControl(vectorTargetParticle, 3, [endWidth, startWidth, 0]);
+	Particles.SetParticleControl(vectorTargetParticle, 4, [0, 255, 0]);
 
 	//Calculate initial particle CPs
-	vector_start_position = worldPosition;
-	var unitPosition = Entities.GetAbsOrigin(mainSelected);
-	var direction = Vector_normalize(Vector_sub(vector_start_position, unitPosition));
-	var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
-	Particles.SetParticleControl(vector_target_particle, 2, newPosition);
+	vectorStartPosition = worldPosition;
+	const unitPosition = Entities.GetAbsOrigin(mainSelected);
+	const direction = Vector_normalize(Vector_sub(vectorStartPosition, unitPosition));
+	const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
+	Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
 
 	//Start position updates
 	ShowVectorTargetingParticle();
@@ -48,105 +116,49 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 }
 
 //End the particle effect
-function OnVectorTargetingEnd(bSend)
+function OnVectorTargetingEnd()
 {
-	if (vector_target_particle) {
-		Particles.DestroyParticleEffect(vector_target_particle, true)
-		vector_target_particle = undefined;
+	if (vectorTargetParticle) {
+		Particles.DestroyParticleEffect(vectorTargetParticle, true)
+		vectorTargetParticle = undefined;
+		vectorTargetUnit = undefined;
 	}
-	if( bSend ){
-		SendPosition();
-	}
-}
-
-//Send the final data to the server
-function SendPosition() {
-	var cursor = GameUI.GetCursorPosition();
-	var ePos = GameUI.GetScreenWorldPosition(cursor);
-	var cPos = vector_start_position;
-	var pID = Players.GetLocalPlayer();
-	GameEvents.SendCustomGameEventToServer("send_vector_position", {"playerID" : pID, "unit" : vectorTargetUnit, "abilityIndex":active_ability, "PosX" : cPos[0], "PosY" : cPos[1], "PosZ" : cPos[2], "Pos2X" : ePos[0], "Pos2Y" : ePos[1], "Pos2Z" : ePos[2]});
-	
-	$.Schedule(1 / 144, function(){GameUI.SelectUnit(vectorTargetUnit, false);} );
 }
 
 //Updates the particle effect and detects when the ability is actually casted
 function ShowVectorTargetingParticle()
 {
-	if (vector_target_particle !== undefined)
+	if (vectorTargetParticle !== undefined)
 	{
-		var mainSelected = Players.GetLocalPlayerPortraitUnit();
-		var cursor = GameUI.GetCursorPosition();
-		var worldPosition = GameUI.GetScreenWorldPosition(cursor);
+		const mainSelected = Players.GetLocalPlayerPortraitUnit();
+		const cursor = GameUI.GetCursorPosition();
+		const worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
 		if (worldPosition == null)
 		{
 			$.Schedule(1 / 144, ShowVectorTargetingParticle);
 			return;
 		}
-		var val = Vector_sub(worldPosition, vector_start_position);
-		if (!(val[0] == 0 && val[1] == 0 && val[2] == 0))
+		const testVec = Vector_sub(worldPosition, vectorStartPosition);
+		if (!(testVec[0] == 0 && testVec[1] == 0 && testVec[2] == 0))
 		{
-			var direction = Vector_normalize(Vector_sub(vector_start_position, worldPosition));
+			let direction = Vector_normalize(Vector_sub(vectorStartPosition, worldPosition));
 			direction = Vector_flatten(Vector_negate(direction));
-			var newPosition = Vector_add(vector_start_position, Vector_mult(direction, vector_range));
+			const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
 
-			Particles.SetParticleControl(vector_target_particle, 2, newPosition);
+			Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
 		}
-		var mouseHold = GameUI.IsMouseDown(0);
-		if (is_quick) 
-		{
-			if (mouseHold) 
-			{
-				CastStop( {cast:1} );
-			} else {
-				$.Schedule(1 / 144, ShowVectorTargetingParticle);
-			}
-		} else {
-			if (mouseHold)
-			{
-				$.Schedule(1 / 144, ShowVectorTargetingParticle);
-			} else {
-				CastStop( {cast:1} );
-			}
+		if( mainSelected != vectorTargetUnit ){
+			GameUI.SelectUnit(vectorTargetUnit, false )
 		}
+		$.Schedule(1 / 144, ShowVectorTargetingParticle);
 	}
 }
-
-//Mouse Callback to check whever this ability was quick casted or not
-GameUI.SetMouseCallback(function(eventName, arg)
-{
-	click_start = true;
-	if (resetSchedule) {
-		$.CancelScheduled(resetSchedule, {});
-	}
-	resetSchedule = $.Schedule(1 / 20, function() {
-		resetSchedule = undefined;
-		click_start = false;
-	});
-
-	return CONTINUE_PROCESSING_EVENT;
-});
-
-//Start to cast the vector ability
-function CastStart(table) {
-	active_ability = table.ability
-	is_quick = !click_start
-	if (GameUI.IsMouseDown(0) || is_quick) {
-		OnVectorTargetingStart(table.startWidth, table.endWidth, table.castLength);
-	}
-}
-
-//Stop to cast the vector ability
-function CastStop(table) {
-	OnVectorTargetingEnd( table.cast == 1 );
-}
-
 
 //Some Vector Functions here:
 function Vector_normalize(vec)
 {
-	var val = 1 / Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
+	const val = 1 / Math.sqrt(Math.pow(vec[0], 2) + Math.pow(vec[1], 2) + Math.pow(vec[2], 2));
 	return [vec[0] * val, vec[1] * val, vec[2] * val];
 }
 
@@ -179,11 +191,3 @@ function Vector_raiseZ(vec, inc)
 {
 	return [vec[0], vec[1], vec[2] + inc];
 }
-
-//Register function to cast vector targeting abilities
-(function () {
-  GameEvents.Subscribe("vector_target_cast_start", CastStart );
-  GameEvents.Subscribe("vector_target_cast_stop", CastStop );
-})();
-
-//StartTrack();
