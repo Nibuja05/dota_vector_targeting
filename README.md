@@ -14,6 +14,10 @@ A Helper Library to use vector targeting for dota lua abilities.
 - Overwrite particles:
 	- copy the content of the particle directory to yours. This will overwrite the default particles and replace them with these custom ones (default ones don't seem to work properly)
 
+- For TypeScript users:
+	- also copy `vector_targeting_interface.ts`
+	- use `BaseVectorAbility` instead of `BaseAbility` for vector targeting abilities
+
 - Use for your lua abilities:
 	- look up the example ability
 	- see custom functions below
