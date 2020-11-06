@@ -35,6 +35,4 @@ function test_vector_targeting_lua:OnVectorCastStart(vStartLocation, vDirection)
 	}
 	projectile = ProjectileManager:CreateLinearProjectile(info)
 
-	self:UpdateVectorValues()
-
 end
