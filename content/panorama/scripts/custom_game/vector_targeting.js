@@ -14,14 +14,17 @@ var vectorTargetParticle;
 var vectorTargetUnit;
 var vectorStartPosition;
 var vectorRange = 800;
+var useDual = false;
 var currentlyActiveVectorTargetAbility;
+
+const defaultAbilities = ["pangolier_swashbuckle", "clinkz_burning_army", "dark_seer_wall_of_replica", "void_spirit_aether_remnant"];
 
 //Mouse Callback to check whever this ability was quick casted or not
 GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
 {
 	if(GameUI.GetClickBehaviors() == 3 && currentlyActiveVectorTargetAbility != undefined){
 		const netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility )
-		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength, netTable.dual, netTable.ignoreArrow);
 		currentlyActiveVectorTargetAbility = undefined;
 	}
 	return CONTINUE_PROCESSING_EVENT;
@@ -38,13 +41,19 @@ function CheckAbilityVectorTargeting(panel){
 
 		//Check if the ability/item is vector targeted
 		const netTable = CustomNetTables.GetTableValue("vector_targeting", abilityIndex);
-		if (netTable == undefined) {return;}
+		if (netTable == undefined) {
+			let behavior = Abilities.GetBehavior(abilityIndex);
+			if ((behavior & DOTA_ABILITY_BEHAVIOR.DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) !== 0) {
+				GameEvents.SendCustomGameEventToServer("check_ability", {"abilityIndex" : abilityIndex} );
+			}
+			return;
+		}
 
 		//Check if the ability/item gets activated or is finished
 		if (panel.BHasClass("is_active")) {
 			currentlyActiveVectorTargetAbility = abilityIndex;
 			if(GameUI.GetClickBehaviors() == 9 ){
-				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength);
+				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength, netTable.dual, netTable.ignoreArrow);
 			}
 		} else {
 			OnVectorTargetingEnd();
@@ -78,14 +87,14 @@ function GetAbilityFromPanel(panel) {
 }
 
 // Start the vector targeting
-function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
+function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength, bDual, bIgnoreArrow)
 {
 	if (vectorTargetParticle) {
 		Particles.DestroyParticleEffect(vectorTargetParticle, true)
 		vectorTargetParticle = undefined;
 		vectorTargetUnit = undefined;
 	}
-	
+
 	const iPlayerID = Players.GetLocalPlayer();
 	const selectedEntities = Players.GetSelectedEntities( iPlayerID );
 	const mainSelected = Players.GetLocalPlayerPortraitUnit();
@@ -95,18 +104,49 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 	const worldPosition = GameUI.GetScreenWorldPosition(cursor);
 
 	// particle variables
-	const startWidth = fStartWidth || 125
-	const endWidth = fEndWidth || startWidth
-	vectorRange = fCastLength || 800
+	let startWidth = fStartWidth || 125;
+	let endWidth = fEndWidth || startWidth;
+	vectorRange = fCastLength || 800;
+	let ignoreArrowWidth = bIgnoreArrow;
+	useDual = bDual == 1;
+
+
+	// redo dota's default particles
+	const abilityName = Abilities.GetAbilityName(currentlyActiveVectorTargetAbility);
+	if (defaultAbilities.includes(abilityName)) {
+		if (abilityName == "void_spirit_aether_remnant") {
+			$.Msg("Special!");
+			startWidth = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "start_radius");
+			endWidth = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "end_radius");
+			vectorRange = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "remnant_watch_distance");
+			ignoreArrowWidth = 1;
+		} else if (abilityName == "dark_seer_wall_of_replica") {
+			vectorRange = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "width");
+			let multiplier = 1
+			if (Entities.HasScepter(mainSelected)) {
+				multiplier = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "scepter_length_multiplier");
+			}
+			vectorRange = vectorRange * multiplier
+			useDual = true;
+		} else {
+			vectorRange = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "range");
+		}
+	}
+
+	if (useDual) {
+		vectorRange = vectorRange / 2;
+	}
+
+	let particleName = "particles/ui_mouseactions/custom_range_finder_cone.vpcf";
+	if (useDual) {
+		particleName = "particles/ui_mouseactions/custom_range_finder_cone_dual.vpcf"
+	}
 
 	//Initialize the particle
-	const casterLoc = Entities.GetAbsOrigin(mainSelected);
-	const secondLoc = [casterLoc[0] + Math.min( 1500, vectorRange), casterLoc[1], casterLoc[2]];
-	vectorTargetParticle = Particles.CreateParticle("particles/ui_mouseactions/range_finder_cone.vpcf", ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
+	vectorTargetParticle = Particles.CreateParticle(particleName, ParticleAttachment_t.PATTACH_CUSTOMORIGIN, mainSelected);
 	vectorTargetUnit = mainSelected
 	Particles.SetParticleControl(vectorTargetParticle, 1, Vector_raiseZ(worldPosition, 100));
-	Particles.SetParticleControl(vectorTargetParticle, 2, Vector_raiseZ(secondLoc, 100));
-	Particles.SetParticleControl(vectorTargetParticle, 3, [endWidth, startWidth, 0]);
+	Particles.SetParticleControl(vectorTargetParticle, 3, [endWidth, startWidth, ignoreArrowWidth]);
 	Particles.SetParticleControl(vectorTargetParticle, 4, [0, 255, 0]);
 
 	//Calculate initial particle CPs
@@ -114,7 +154,14 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 	const unitPosition = Entities.GetAbsOrigin(mainSelected);
 	const direction = Vector_normalize(Vector_sub(vectorStartPosition, unitPosition));
 	const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
-	Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
+	if (!useDual) {
+		Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
+	} else {
+		Particles.SetParticleControl(vectorTargetParticle, 7, newPosition);
+		const secondPosition = Vector_add(vectorStartPosition, Vector_mult(Vector_negate(direction), vectorRange));
+		Particles.SetParticleControl(vectorTargetParticle, 8, secondPosition);
+	}
+	
 
 	//Start position updates
 	ShowVectorTargetingParticle();
@@ -152,7 +199,13 @@ function ShowVectorTargetingParticle()
 			direction = Vector_flatten(Vector_negate(direction));
 			const newPosition = Vector_add(vectorStartPosition, Vector_mult(direction, vectorRange));
 
-			Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
+			if (!useDual) {
+				Particles.SetParticleControl(vectorTargetParticle, 2, newPosition);
+			} else {
+				Particles.SetParticleControl(vectorTargetParticle, 7, newPosition);
+				const secondPosition = Vector_add(vectorStartPosition, Vector_mult(Vector_negate(direction), vectorRange));
+				Particles.SetParticleControl(vectorTargetParticle, 8, secondPosition);
+			}
 		}
 		if( mainSelected != vectorTargetUnit ){
 			GameUI.SelectUnit(vectorTargetUnit, false )

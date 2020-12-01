@@ -15,6 +15,8 @@ function VectorTarget:Init()
 	ListenToGameEvent('dota_player_learned_ability', Dynamic_Wrap(VectorTarget, 'OnAbilityLearned'), self)
 	ListenToGameEvent('dota_item_purchased', Dynamic_Wrap(VectorTarget, 'OnItemBought'), self)
 	ListenToGameEvent('dota_item_picked_up', Dynamic_Wrap(VectorTarget, 'OnItemPickup'), self)
+
+	CustomGameEventManager:RegisterListener("check_ability", Dynamic_Wrap(VectorTarget, "OnAbilityCheck"))
 end
 
 function VectorTarget:OrderFilter(event)
@@ -58,7 +60,9 @@ function VectorTarget:UpdateNettable(ability)
 	local vectorData = {
 		startWidth = ability:GetVectorTargetStartRadius(),
 		endWidth = ability:GetVectorTargetEndRadius(),
-		castLength = ability:GetVectorTargetRange()
+		castLength = ability:GetVectorTargetRange(),
+		dual = ability:IsDualVectorDirection(),
+		ignoreArrow = ability:IgnoreVectorArrowWidth(),
 	}
 	CustomNetTables:SetTableValue("vector_targeting", tostring(ability:entindex()), vectorData)
 end
@@ -108,6 +112,11 @@ function VectorTarget:OnItemBought(event)
 	end
 end
 
+function VectorTarget:OnAbilityCheck(event)
+	local ability = EntIndexToHScript(event.abilityIndex)
+	VectorTarget:UpdateNettable(ability)
+end
+
 function CDOTABaseAbility:GetVectorTargetRange()
 	return 800
 end 
@@ -138,4 +147,12 @@ end
 
 function CDOTABaseAbility:UpdateVectorValues()
 	VectorTarget:UpdateNettable(self)
+end
+
+function CDOTABaseAbility:IsDualVectorDirection()
+	return false
+end
+
+function CDOTABaseAbility:IgnoreVectorArrowWidth()
+	return false
 end

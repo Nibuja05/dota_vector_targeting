@@ -9,4 +9,6 @@ export interface BaseVectorAbility extends BaseAbility {
 	GetVectorDirection():Vector;
 	UpdateVectorValues():void;
 	OnVectorCastStart(vStartLocation: Vector, vDirection: Vector):void;
+	IsDualVectorDirection():boolean;
+	IgnoreVectorArrowWidth():boolean;
 }
