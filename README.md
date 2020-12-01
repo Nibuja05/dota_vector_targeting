@@ -46,3 +46,6 @@ A Helper Library to use vector targeting for dota lua abilities.
 
 - `UpdateVectorValues()`: refreshes `start radius`, `end radius` and `range` manually
 
+- `IsDualVectorDirection()`: return true to make this abilities particle effect bidirectional (halfes range)
+
+- `IgnoreVectorArrowWidth()`: return true to ignore `GetVectorTargetEndRadius()` regarding the width of the arrow in the particle effect
