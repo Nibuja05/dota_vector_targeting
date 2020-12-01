@@ -80,6 +80,12 @@ function GetAbilityFromPanel(panel) {
 // Start the vector targeting
 function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength)
 {
+	if (vectorTargetParticle) {
+		Particles.DestroyParticleEffect(vectorTargetParticle, true)
+		vectorTargetParticle = undefined;
+		vectorTargetUnit = undefined;
+	}
+	
 	const iPlayerID = Players.GetLocalPlayer();
 	const selectedEntities = Players.GetSelectedEntities( iPlayerID );
 	const mainSelected = Players.GetLocalPlayerPortraitUnit();
