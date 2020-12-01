@@ -115,7 +115,6 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength, bDual, bIgn
 	const abilityName = Abilities.GetAbilityName(currentlyActiveVectorTargetAbility);
 	if (defaultAbilities.includes(abilityName)) {
 		if (abilityName == "void_spirit_aether_remnant") {
-			$.Msg("Special!");
 			startWidth = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "start_radius");
 			endWidth = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "end_radius");
 			vectorRange = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "remnant_watch_distance");
