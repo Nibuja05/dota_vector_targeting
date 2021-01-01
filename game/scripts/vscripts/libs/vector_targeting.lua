@@ -24,8 +24,8 @@ function VectorTarget:OrderFilter(event)
 	local unit = EntIndexToHScript(event.units["0"])
 	local ability = EntIndexToHScript(event.entindex_ability)
 
-	if not ability or not ability.GetBehavior then return true end
-	local behavior = ability:GetBehavior()
+	if not ability or not ability.GetBehaviorInt then return true end
+	local behavior = ability:GetBehaviorInt()
 
 	-- check if the ability exists and if it is Vector targeting
 	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) then
@@ -72,8 +72,8 @@ function VectorTarget:OnAbilityLearned(event)
 	local hero = PlayerResource:GetSelectedHeroEntity(playerID)
 	local ability = hero:FindAbilityByName(event.abilityname)
 
-	if not ability or not ability.GetBehavior then return true end
-	local behavior = ability:GetBehavior()
+	if not ability or not ability.GetBehaviorInt then return true end
+	local behavior = ability:GetBehaviorInt()
 
 	-- check if the ability exists and if it is Vector targeting
 	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
@@ -88,8 +88,8 @@ function VectorTarget:OnItemPickup(event)
 	end
 	local ability = EntIndexToHScript(index)
 
-	if not ability or not ability.GetBehavior then return true end
-	local behavior = ability:GetBehavior()
+	if not ability or not ability.GetBehaviorInt then return true end
+	local behavior = ability:GetBehaviorInt()
 
 	-- check if the item exists and if it is Vector targeting
 	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
@@ -103,8 +103,8 @@ function VectorTarget:OnItemBought(event)
 
 	for i=0, 15 do
 		local item = hero:GetItemInSlot(i)
-		if item and item.GetBehavior then
-			local behavior = item:GetBehavior()
+		if item and item.GetBehaviorInt then
+			local behavior = item:GetBehaviorInt()
 			if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
 				VectorTarget:UpdateNettable(item)
 			end
