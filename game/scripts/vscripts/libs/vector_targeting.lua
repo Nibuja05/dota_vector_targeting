@@ -28,7 +28,7 @@ function VectorTarget:OrderFilter(event)
 	local behavior = ability:GetBehaviorInt()
 
 	-- check if the ability exists and if it is Vector targeting
-	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) then
+	if bit.band(behavior, DOTA_ABILITY_BEHAVIOR_VECTOR_TARGETING) ~= 0 then
 
 		if event.order_type == DOTA_UNIT_ORDER_VECTOR_TARGET_POSITION then
 			ability.vectorTargetPosition2 = Vector(event.position_x, event.position_y, 0)
