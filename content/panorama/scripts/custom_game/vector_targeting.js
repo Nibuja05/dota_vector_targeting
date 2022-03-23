@@ -17,7 +17,8 @@ var vectorRange = 800;
 var useDual = false;
 var currentlyActiveVectorTargetAbility;
 
-const defaultAbilities = ["pangolier_swashbuckle", "clinkz_burning_army", "dark_seer_wall_of_replica", "void_spirit_aether_remnant"];
+const defaultAbilities = ["pangolier_swashbuckle", "clinkz_burning_army", "dark_seer_wall_of_replica", "void_spirit_aether_remnant", "broodmother_sticky_snare"];
+const ignoreAbilites = ["tusk_walrus_kick", "marci_companion_run"]
 
 //Mouse Callback to check whever this ability was quick casted or not
 GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
@@ -110,9 +111,9 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength, bDual, bIgn
 	let ignoreArrowWidth = bIgnoreArrow;
 	useDual = bDual == 1;
 
-
 	// redo dota's default particles
 	const abilityName = Abilities.GetAbilityName(currentlyActiveVectorTargetAbility);
+	if (ignoreAbilites.includes(abilityName)) return;
 	if (defaultAbilities.includes(abilityName)) {
 		if (abilityName == "void_spirit_aether_remnant") {
 			startWidth = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "start_radius");
@@ -126,6 +127,8 @@ function OnVectorTargetingStart(fStartWidth, fEndWidth, fCastLength, bDual, bIgn
 				multiplier = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "scepter_length_multiplier");
 			}
 			vectorRange = vectorRange * multiplier
+			useDual = true;
+		} else if (abilityName == "broodmother_sticky_snare") {
 			useDual = true;
 		} else {
 			vectorRange = Abilities.GetSpecialValueFor(currentlyActiveVectorTargetAbility, "range");
