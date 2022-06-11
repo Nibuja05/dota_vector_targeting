@@ -10,6 +10,7 @@ A Helper Library to use vector targeting for dota lua abilities.
 - Set up Library:
 	- Copy vector\_targeting.lua to you 'libs' folder under vscripts (or copy folder if it doesnt exist)
 	- require the script in you addon\_game\_mode.lua
+	- copy `custom_net_tables.txt` or combine it with your existing one
 
 - Overwrite particles:
 	- copy the content of the particle directory to yours. This will overwrite the default particles and replace them with these custom ones (default ones don't seem to work properly)
