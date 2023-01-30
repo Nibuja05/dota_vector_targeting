@@ -177,6 +177,7 @@ function OnVectorTargetingEnd()
 		Particles.DestroyParticleEffect(vectorTargetParticle, true)
 		vectorTargetParticle = undefined;
 		vectorTargetUnit = undefined;
+		currentlyActiveVectorTargetAbility = undefined;
 	}
 }
 
