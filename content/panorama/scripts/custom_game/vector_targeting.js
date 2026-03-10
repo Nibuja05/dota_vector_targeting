@@ -26,7 +26,6 @@ GameUI.SetMouseCallback(function(eventName, arg, arg2, arg3)
 	if(GameUI.GetClickBehaviors() == 3 && currentlyActiveVectorTargetAbility != undefined){
 		const netTable = CustomNetTables.GetTableValue( "vector_targeting", currentlyActiveVectorTargetAbility )
 		OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength, netTable.dual, netTable.ignoreArrow);
-		currentlyActiveVectorTargetAbility = undefined;
 	}
 	return CONTINUE_PROCESSING_EVENT;
 });
@@ -56,7 +55,7 @@ function CheckAbilityVectorTargeting(panel){
 			if(GameUI.GetClickBehaviors() == 9 ){
 				OnVectorTargetingStart(netTable.startWidth, netTable.endWidth, netTable.castLength, netTable.dual, netTable.ignoreArrow);
 			}
-		} else {
+		} else if (abilityIndex == currentlyActiveVectorTargetAbility) {
 			OnVectorTargetingEnd();
 		}
 	}
